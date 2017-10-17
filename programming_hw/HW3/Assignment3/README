@@ -1,0 +1,411 @@
+                          UNIX System Programming
+                          Programing Assignment 3
+
+                        Finding Palindromes in Grep 
+                                    or
+                        "Y Rot ^ a Grep Pergatory?"
+                              in 
+
+
+Due: Monday, May 4  at  11:59 pm.
+
+Submission method: You will post to the course website.
+
+Submission rules: I REQUIRE you to FOLLOW THESE RULES:
+
+                  1. Submit one text file.
+
+                  2. The name of these files will be "<your student ID>.pal"
+                     You will, of course, replace "<your student ID>" with
+                     your unique ID number (B9.... or M9....)
+
+                  3. Submissions made after the deadline will be ignored.
+                     (That means, no late submissions on this assignment.)
+                     (By the way, if you don't turn in your assignments, you
+                      will probably Fail The Class. That's a Fact. So start
+		      early and ask questions.)
+                  
+                  This is a large class. Unless each of you follows the above
+                  rules, the TAs' work becomes so hard. So I INSIST that you 
+                  FOLLOW the above rules. If you don't, we won't accept your 
+                  homework.
+
+                  If you have questions about these rules, you may post your 
+                  questions to the course website.
+
+
+Getting help:   - The Professor has office hours on Monday from 12:20-2:20, 
+                  and on Friday from 10:00-12:00, in room 9037.  He can also 
+                  be reached by email.
+                - The TAs are also available to answer your questions.
+                - Questions about the assignment can be posted to the 
+                  Discussion Forum.
+                - You may also discuss the ideas of the assignment with your
+                  classmates. Such discussion can be quite helpful to your 
+                  learning -- IF you ONLY talk about the concepts of the 
+                  assignment in the abstract. If, however, you discuss 
+                  specific implementation details of this assignment, then 
+                  you are not helping each others to learn; you are just 
+                  doing the work for them.
+		  And note: you may not share code. You CANNOT show another
+		  student ANY part of the answer to the assignment.
+
+Cheating policy:  If students are found to be sharing work, they will receive 
+                  a 0 for this course, or worse.
+                  It is cheating to let another student see your work, or to 
+                  let them look over your shoulder when your code is on the
+		  screen.
+                  We always look for evidence of cheating, so don't do it.
+                  (In any event, even if you do not get caught, a student who 
+                  copies the homework will not learn the material, so they 
+                  will fail the exam.)
+
+		  
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Assignment Summary:
+_________________________________
+1. The Concept of the Assignment:
+"""""""""""""""""""""""""""""""""
+Palindromes are words or phrases that spell the same forwards or backwards.
+For example: "racecar" or "A Toyota! Race fast, safe car! A Toyota." In
+Lecture 7, we learned about searching for palindromes using the backreference 
+feature of regular expressions. But the limitations in the class examples were:
+ - We could not have punctuation symbols
+ - We could only search for palindromes of the specified length
+
+In this assignment, you will search for the longest palindrome in a provided 
+input file. For this assignment, palindromes can span punctuation symbols and 
+line breaks, and they can begin and end in the middle of words.
+
+For example:
+% echo "Hello, Olly" | ./pal
+Best palindrome is 6 letters long:
+1:He{llo, Oll}y
+
+(In the above example, I have used the "{}" to indicate the matching part. I
+have shown it this way, because emacs and less don't show colors correctly, so
+I needed to use some other way to indicate the part that matched. When you run
+your program, however, you won't see the "{" and "}"symbols; instead, you will
+see the match in red.)
+
+Now, looking at the output,see that:
+- it has correctly found a 6 letter palindrome.
+- no longer palindrome exists.
+- the palindrome covers punctuation and differences in case.
+
+_____________________
+2. Provided Examples:
+"""""""""""""""""""""
+Let's look at the directory containing this README file:
+% ls
+alice     crusoe     dawntreader     glass     palindromes     README
+aliceout  crusoeout  dawntreaderout  glassout  palindromesout
+
+Notice that 5 sample inputs have been provided, along with 5 sample outputs.
+
+The files "alice", "crusoe", "dawntreader", and "glass" are all ebooks. They 
+have longest palindrome lengths of 9, 11, 15, and 7, respectively.
+You should cat each of their output files, to see the palindromes in color --
+unlike "less", "cat" does understand how to display color correctly. So, 
+although I cannot put color in this README file, yet you can run cat on each
+of the provided output files and then you can see the color for yourself.
+
+The file "palindromes" is a small file containing a few long palindromes. These
+are so long that they exceed the 18/19 letter length. Thus, the full length of
+the palindromes cannot be determined, because the backreference "\10" is not
+properly understood in regular expressions. Therefore, the output is to show
+all matches of 18 or 19 characters. You will therefore see that:
+- "Never odd or even" does notprint, because its length is just 14.
+- The other palindromes only have their central portions colored.
+
+Another thing to notice is that all input files use the ~ symbol to indicate
+the ends of their paragraphs.
+
+______________________
+3. Algorithm Overview:
+""""""""""""""""""""""
+Notice that the fact that something is a palindrome implies that smaller things
+are also palindromes:
+ "racecar"  => "aceca"  =>   "cec"  
+   is a         is a         is a   
+palindrome   palindrome   palindrome
+
+
+"llo, Oll" => "lo, Ol"  =>  "o, O"
+   is a         is a         is a   
+palindrome   palindrome   palindrome
+
+"racecar" is an odd-length palindrome -- so palindromes with smaller odd
+lengths are contained within it.
+
+"Hello, Olly" contains an even-length palindrome "llooll" -- so palindromes
+with smaller even lengths are contained within it.
+
+From these examples, we can derive a few facts:
+- If there is no palindrome of length x, then there cannot be a palindrome of
+  length x+2.
+- If there is no palindrome of length x, then there can still be a palindrome
+  of length x+1.
+
+These facts suggest an algorithm:
+  let x = 2
+  repeat
+    search for palindromes of length x
+    search for palindromes of length x+1
+    let x = x + 2
+  until neither of the above searches succeeded
+
+The idea of a backreferencing regular expression that keeps growing, and the
+idea of searching separately for even and odd lengths are the key aspects of
+the script you will write.
+
+_____________________________________________
+4. A Line-by-Line Description of Your Script:
+"""""""""""""""""""""""""""""""""""""""""""""
+
+Part I (Init it in I)
+Lines 1-5
+
+This part initializes some things...
+
+Line 1:#!/usr/bin/tcsh
+Line 2:This creates a variable whose value is a interesting regular expression:
+       The regular expression has two parts:
+         1. A lower-case letter, followed by
+         2. Any number of characters that are not lower-case letters
+       The first part needs to be marked so it can later be backreferenced.
+Line 3:This creates a variable "L", which is initialized to be a copy of the
+       variable from line 2. (Hint, remember about quoting rules.)
+Line 4:This creates a variable "R", not initialized to any value (thus, it is
+       empty).
+Line 5:This line creates the input file that will be used for all later
+       analyses.
+       
+       Step 1 of line 5: CAT
+       The first step uses cat. But it is interesting. Here is why:
+        1. By now you ought to know that some commands hang if you type them
+	   at the prompt with no arguments (eg., cat, head tail, wc, etc.).
+	   These commands hang because they are waiting for you to provide
+	   keyboard input.
+	   - If you provide a file name, however, then they don't hang because
+	     they take their input from the file instead.
+	     
+	2. But if you piped (or redirect-in) input into a script, then the
+	   "keyboard-input" becomes hijacked by the piped-or-redirected-input.
+	   
+	3. So, what if you use a hanging command (eg., cat with no arguments)
+	   from within a script, but you pipe (or reirect-in) input to the
+	   script?
+	   Well, in that case, the command would not hang, because it would not
+	   be waiting for you to type from the keyboard, because it would treat
+	   the piped-input as though it were typed.
+
+        4. There is a crucial limitation to the above concept: only one such
+	   command can be used in the script. Suppose, for example, you had:
+	   % cat script
+	   #!/usr/bin/tcsh
+	   cat > f1; cat >f2
+	   % cat script | ./script
+	   % ls -lrt
+	   -rwxrwxr-- 1 Me None 37 Apr 22 23:27 script
+	   -rwxrwxr-- 1 Me None 37 Apr 22 23:28 f1
+	   -rwxrwxr-- 1 Me None  0 Apr 22 23:28 f2
+
+           See? The first file (f1) took everything, and the second file (f2)
+	   got nothing. (But it didn't hang.)
+
+        5. Based on this limitation, any script that might take piped-in input
+	   and that might need to look at that input more than one time needs
+	   to first save the input to a temporary file. Then, once saved, it
+	   can be used as many times as you like.
+        
+        6. New topic. Try this:
+	   % cat script
+	   #!/usr/bin/tcsh
+	   echo \"$1\"
+	   % ./script 5 6 7
+	   "5"
+	   % ./script
+	   ""
+
+           See? If you don't give any arguments, it doesn't produce an error;
+	   it's just empty.
+
+        7. Putting all of these observations together, we find that we can use
+           cat to easily take input from either a file (provided as argument 1
+           to the script) or from the piped input.
+	
+       
+       Step 2 of line 5: GREP
+       The purpose of this step is to use grep to add line numbers to the front
+       of all lines in the file. Note: you must not lose any lines.
+
+       Step 3 of line 5: TR
+       The purpose of this step is to convert the input so that it:
+	- Replaces the newline characters with tilda (~) characters. (The
+	  reason is that we will need to be able to search for palindromes
+	  that span multiple lines -- and tilda is not a common character for
+	  English text files, so it should be able to used for this purpose
+	  without confusion).
+	- Replaces the tilda characters with newline characters. (The reason is
+	  that the text files I have provided all use ~ characters to separate
+	  paragraphs. Thus, we won't look for palindromes that span multiple
+	  paragraphs.)
+
+       Step 4 of line 5: >
+       The purpose of this step is to save the now-formatted input to a
+       temporary file so that we can use it later, as often as we wish to.
+
+
+Part II (Eg, a super grep usage)
+Lines 6-10
+
+This part starts the loop and performs the key grep computations of the script.
+
+Line 6: This loop counts from 1 to 9
+
+Line 7: This line adds an additional portion of regular expression at the front
+        of the variable "R".
+	The new regular expression has 4 parts:
+	1. Any number of characters that are not lower case letters.
+	2. The backslash for backreferencing.
+	3. The loop-count number (which is the backreference number).
+	4. The original "R". (Hint: remember the quoting rules.)
+
+Line 8: This command runs the core greps of the script. It has 4 parts:
+        1. Cat the temporary file created on line 5, and pipe it into...
+        2. A grep command to capture the lines containing palindromes of at
+	   least a length of twice the loop counter value.
+	   Now, how to capture those lines?
+	   Well, first of all, when I say "the linescontaining palindromes", I
+           mean lines as defined in the original input. But the input file was
+	   reformatted (back on line 5 of this script). Now each paragraph of
+	   the original input file now occupies one "line".
+	   Now this grep doesn't want to print the whole paragraph, but just
+	   the orignal input file lines. So we need:
+	    a. A grep flag that can print just the matching part, rather than
+	       the entire line (i.e., in this case, an entire paragraph) that
+	       contains the match.
+	    b. A regular expresion that captures the palindrome and that, along
+	       with the palindrome, also catches the "stuff" to the left of the
+	       match (but still on the same line as the leftmost portion of the
+	       match) and also catches the "stuff" to the right of the match
+	       (but still on the same line as the rightmost portion of the
+	       match).
+	         Hint 1: The regular expression for the palindrome is created
+		         by combining L and R.
+	         Hint 2: The "stuff" is identified as being on the same line,
+		         because it doesn't have any tildas in it.
+	         Hint 3: Remember the quoting rules.
+		 Hint 4: if you put a "[" after a variable name then the parser
+		         gets confused. For example, if we had a variable x and
+			 we wanted a regular expression containing the value of
+			 x followed by either a "Y" or "Z", then we could try:
+                         % grep "$x[YZ]" file
+			 Missing -.
+
+                         So, that didn't work. The parser is confused. The
+			 solution is to break the two things apart, in any of
+			 the following ways:
+                         % grep "$x""[YZ]" file
+                         % grep $x:q"[YZ]" file
+                         % grep "$x"\[YZ\] file
+        3. A grep command to make the palindromes appear in color.
+           In other words, the previous grep captured the whole lines,
+	   including some "stuff" that we don't want to be colored in.
+	   Now, there is a flag for coloring in the matching pattern; and we
+	   discuss this flag in lecture 8; but this flag is not enough, in this
+	   oresent circumstnce. Although the flag produces a colored output,
+	   yet it does not preserve that color when passing the result to any
+	   place other than the screen.
+	   So you need to use man (or google) to figure out what information
+	   needs to be added to the color flag.
+	4. A redirection operator to send the result to "out0"
+	   
+        Note that the greps cannot be case sensitive.
+ 
+Line 9: This line adds an additional portion of regular expression at the end
+        of the variable "L".
+	The added portion Is the variable from line 2.
+	You should try tounderstand why it is so.
+	Also, remember the quoting rules.
+
+Line 10:This is identical to line 8, except that the output redirects to out1.
+
+
+Part III (Test set)
+Lines 11-23
+
+These lines perform a set of tests to identify the longest palindrome(s) and
+to display them.
+
+Line 11: Tests if the out0 and out1 files are both empty
+  Line 12: This line displays a message about the best palindrome length.
+	   It is implemented as an echo command.
+	   The interesting part of the echo command is that it uses expr to
+	   calculate the length, based on two of the variables that exist in 
+           within the script.
+	   
+           Now, recognize that line 11 ensures that no match was found on this
+	   iteration, so the longest match must be from the previous iteration.
+	   - That previous iteration will have stored (via line 20) the best
+	     palindrome(s) into a file called "out".
+	   - Also, that previous iteration will have remembered (via lines 16
+	     and 18) whether the best match was an even or an odd length.
+	   - Note: this assumes that there was a previous iteration. Which is
+	     to say that it is assumed that there exists a palindrome of at
+	     least length 2. Such an assumption is true for almost any English
+	     document, so I don't care about what happens if this assumption
+	     is wrong.
+
+  Line 13: This line displays the contents of the file named "out", but with
+           the original line separations. In other words, the tildas need to
+	   converted back to newlines.
+
+  Line 14: exit
+  
+Line 15: Tests if the out1 file is empty
+  Line 16: Remember the number "0"
+           Since out1 is empty but out0 isn't, then this means that the current
+           iteration has, as its best solution, a palindrome with a length that
+	   is an even number. This corresponds to "out0". So, we remember "0".
+Line 17: else
+  Line 18: Since out1 is not empty, it is the longest match (regardless of the
+           the state of out0). Therefore, remember "1".
+Line 19: endif
+	   
+Line 20:This line is a single cp command. Use the number you remembered (back
+        on either line 13 or 15) to copy the correct "out?" file to a new file
+	named simply "out".
+
+Line 21: end
+
+Line 22: echo "Best palindrome is at least 18 letters long:"
+
+         Why do we do this?
+	 Well, since we've finished the loop without executing Line 14, we
+	 therefore know that a match was found on the last iteration.
+	 And the last iteration checks for palindromes of length 18 or 19, so
+	 we know that such a length of palindrome exists.
+	 But we cannot determine if a larger palindrome exists (because "\10"
+	 doesn't work -- grep treats it as "\1" followed by a "0").
+
+         So we just print all of the 18-or-19-letter palindromes.
+
+Line 23: The 18-letter and 19-letter palindromes are stored in out0 and out1,
+         respectively. It is not a problem if one of these files is empty, but
+	 we know that they can't both be empty.
+	
+         The steps of Line 20 are:
+         - Combine the contents of out0 and out1, and pass it on via the pipe
+	 - Use tr to restore the tildas as newlines
+	 - Sort the output so that palindromes list in line order (rather than
+	   all of out0's lines coming first).
+           Now, when you are sorting, you will find that the -g flag doesn't do
+	   what you might expect it to, probably because it gets confused by
+	   the fact that the line numbers are followed by colons instead of
+	   spaces.
+	   This is not a big problem; just use the -n flag instead.
+

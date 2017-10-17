@@ -1,0 +1,152 @@
+Four additional questions were asked:
+
+1. Some students noticed a problem when going "down" from Maze4. Line 116
+   indicates that the down-target is Maze5, But line 120 indicates that the
+   target is Maze2. The students correctly observed that one of these two must
+   be wrong.
+
+   The answer is that line 120 is wrong. The edge from Maze4 to Maze 2 should
+   be labeled as "w" not "d". This is the way that the actual game is mapped.
+
+
+2. The restore "~/Assignment1/start" command does not work in Ubuntu. Perhaps
+   most of you are using Cygwin, so you do not encounter this problem.
+   It is not, however, a serious problem, because:
+     1. You don't really need to actually play the game in order to understand
+        the assignment.
+     2. You can still play the game, you just need to solve level 1 on your
+        own. Once you solve level 1, you can save that solution. Since you
+	would be saving it in Ubuntu, I suspect that the Ubuntu will also be
+	able to restore it. (For the solution to level 1, you can google for
+	the solution to dunnet.)
+
+
+3. The TA mentioned something about an ordering problem when you run diff.
+   I don't have any information about why he said that, so I don't know.
+   But, if your subdirStructure and my ~/Assignment1/ExpectedResultofFind files
+   are in different order, then you can do this:
+   % cat subdirStructure | sort > student
+   % cat ~/Assignment1/ExpectedResultOfFind | sort > professor
+   % diff student professor
+   Now they will be in the same order, so you would expect to find no
+   differences. If differences are found, it means that your directories and/or
+   files are wrong.
+   
+
+4. A student asked about command cordination. Something appeared to not work
+   correctly, but it was actually a problem with his alias. To understand,
+   consider the following set of commands:
+
+1:    % alias print3='echo 3'
+2:    % alias print4then5withsemicolon='echo 4; echo 5'
+3:    % alias print6then7withand='echo 6 && echo 7'
+4:    % echo "echo 8; echo 9" > print8then9withsemicoloninascript
+5:    % chmod u+x print8then9withsemicoloninascript
+6:    % expr 1 + && echo 2
+7:    expr: syntax error
+8:    % expr 1 + && print3
+9:    expr: syntax error
+10:   % expr 1 + && print4then5withsemicolon
+11:   expr: syntax error
+12:   5
+13:   % expr 1 + && print6then7withand
+14:   expr: syntax error
+15:   % expr 1 + && ./print8then9withsemicoloninascript
+16:   expr: syntax error
+17:   % expr 1 + && ( print4then5withsemicolon )
+18:   expr: syntax error
+
+Lines 1-3 create 3 aliases. The first alias has one command in it. The other
+two aliases have two commands -- but different command coordination methods.
+
+Lines 4-5 produce a script. The script is similar to the alias produced on
+line 2 (because they both use semicolons for separating the two commands).
+
+Lines 6-7 demonstrates the basic expected behavior of the && operator: the
+second command ought not to run if the first command fails. Moreover, the first
+command does fail, because "1 +" is not a complete expression. So, just as we
+would expect, the "echo 2" does not print.
+
+Lines 8-9 are functionally similar to Lines 6-7. In line 6, the second command
+was an echo; in line 8 it is an alias for an echo. Since the alias is directly
+replaced with the command it stands for, the functionality, in both cases, is
+expr 1 + && echo __
+It is therefore to be expected that the outputs must be similar. And they are:
+in both cases, the syntax error is generated and then nothing else is printed.
+
+Lines 10-12 demonstrate the specific confusion the student had asked about.
+To just look at what was typed, there seems to be no syntactic difference
+between lines 8 and 10:
+8:    % expr 1 + && print3
+10:   % expr 1 + && print4then5withsemicolon
+Each conditionaly runs an alias.  But their outputs are different. Line 12 says
+"5" This means that part of the alias executed even though the previous command
+(expr 1 +) had failed. To understand why, let us replace the alias with the
+commands it stands for (as defined on Line 2):
+expr 1 + && print4then5withsemicolon -> expr 1 + && echo 4; echo 5
+Now you can see why the "echo 5" executed always and not conditionally. This
+is actually a bug in the design of the alias.
+
+Lines 13-14 demonstrate the correct result from a nonbugged alias. That alias,
+as defined on Line 3, uses a "&&" instead of a ";". Consequently it expands as:
+expr 1 + && print6then7withand -> expr 1 + && echo 6 && echo 7
+This is the proper alias, and it has the proper behavior: if 6 does not print
+then neither should 7.
+
+Lines 15-16 demonstrate that the use of the semicolon is only a problem for
+aliases. The script "print8then9withsemicoloninascript" uses a semilicolon,
+just like the print4then5withsemicolon alias does. But, unlike the alias, the
+script works correctly -- if 8 does not print then neither does 9. (But, in
+homework 1, you can't use scripts because we are learning about aliases).
+
+Lines 17-18 demonstrate another approach to solving the aliase problem. By
+using parentheses, the broken alias (ie, the one defined on line 2) now works
+correctly. This is because it expands as:
+expr 1 + && ( print4then5withsemicolon ) -> expr 1 + && ( echo 4; echo 5 )
+The problem with using  this solution, however, is that many commands produce
+effects that will be lost when the parentheses end. For example:
+% pwd && ( cd e && pwd ) && pwd
+/home/Me/HW1/Receiving_room
+/home/Me/HW1/Receiving_room/e
+/home/Me/HW1/Receiving_room
+See that the directory change does not last outside of the parentheses. This is
+just one example. Other lost effects are exit, redirection, and setting
+variables. You are therefore not allowed to use parentheses to solve the
+alias problems (except for alias #1, as described on lines 576-586 of the
+original README file.
+
+On a final note, just for completeness, we can see how each of the above
+commands would have functioned if the first command had succeeded. In this case
+all of the commands produce the expected output:
+19:   % expr 1 + 0 && echo 2
+20:   1
+21:   2
+22:   % expr 1 + 0 && print3
+23:   1
+24:   3
+25:   % expr 1 + 0 && print4then5withsemicolon
+26:   1
+27:   4
+28:   5
+29:   % expr 1 + 0 && print6then7withand
+30:   1
+31:   6
+32:   7
+33:   % expr 1 + 0 && ./print8then9withsemicoloninascript
+34:   1
+35:   8
+36:   9
+37:   %
+38:   % expr 1 + 0 && ( print4then5withsemicolon )
+39:   1
+40:   4
+41:   5
+
+That they all work is no surprise. Most of them are not broken so they must
+necesarilly work. The only one that was broken was Line 10. And the way that
+it was broken was that it always printed the "5". That behavior was wrong if
+the first command failed. But on line 25, the first command succeeded.
+Therefore line 28 should print a "5" ( whereas line 12 was a bug). What we are
+seeing here is not that the alias is correct, but that the error in the alias
+can only be seen in a situation where the first command fails.
+

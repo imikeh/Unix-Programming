@@ -1,0 +1,51 @@
+#1
+alias grue='(ls ~/HW1/items/.check >& /dev/null && cat ~/HW1/msgs/gruedeath && exit) || (ls ~/HW1/items/lamp >& /dev/null) || (cat ~/HW1/msgs/gruewarn && touch ~/HW1/items/.check)'
+
+#2
+alias show='cd `pwd -P`; basename `pwd`; cat description 2> /dev/null && mv description .description >& /dev/null; echo -n "Visible exits: "; ls -df {??,?,.} 2> /dev/null; echo -n "Items presents: "; ls -df {[[:lower:]]??*,.} 2> /dev/null; grue'
+
+#3
+alias look='basename `pwd`; cat .description; echo -n "Visible exits: "; ls -df {??,?,.} 2> /dev/null; echo -n "Items presents: "; ls -df {[[:lower:]]??*,.} 2> /dev/null;'
+
+#4
+alias inv='echo -n "Items in your inventory: "; cd ~/HW1/items/; ls -df {[[:lower:]]??*,.} 2> /dev/null; cd - >& /dev/null'
+
+#5-12
+alias e='cd e >& /dev/null || cd .e >& /dev/null || echo "error";show'
+alias w='cd w >& /dev/null || cd .w >& /dev/null || echo "error";show'
+alias d='cd d >& /dev/null || cd .d >& /dev/null || echo "error";show'
+alias u='cd u >& /dev/null || cd .u >& /dev/null || echo "error";show'
+alias nw='cd nw >& /dev/null || cd .nw >& /dev/null || echo "error";show'
+alias se='cd se >& /dev/null || cd .se >& /dev/null || echo "error";show'
+alias sw='cd sw >& /dev/null || cd .sw >& /dev/null || echo "error";show'
+alias ne='cd ne >& /dev/null || cd .ne >& /dev/null || echo "error";show'
+
+#13
+alias n='(ls .lakesouth >& /dev/null && touch .hide) && (ls ~/HW1/items/lifepreserver >& /dev/null && rm -f .hide); ls .hide >& /dev/null && cat ~/HW1/msgs/lakedeath && exit; cd n >& /dev/null || cd .n >& /dev/null || echo "error"; show'
+
+#14
+alias s='(ls .lakenorth >& /dev/null && touch .hide) && (ls ~/HW1/items/lifepreserver >& /dev/null && rm -f .hide); ls .hide >& /dev/null && cat ~/HW1/msgs/lakedeath && exit; cd s >& /dev/null || cd .s >& /dev/null || echo "error"; show; ls congratulations_sign >& /dev/null && echo " " && echo "You win." && echo "exit" && quit;'
+
+#15
+alias dropall='(mv ~/HW1/items/* ./ >& /dev/null && echo "Done." && cat ~/HW1/msgs/gruewarn) || echo "dropall fail"'
+
+#16
+alias dropfloppy='(mv ~/HW1/items/floppy_disk ./ >& /dev/null && echo "Done.") || echo "no floppy to drop"'
+
+#17
+alias dropweight='(mv ~/HW1/items/weight ./ >& /dev/null && echo "Done.") || echo "no weight to drop"; (ls weight >& /dev/null && ls button >& /dev/null && ls u >& /dev/null) && (cp -r ~/HW1/Maze1links/.[^.]* ~/HW1/Receiving_room/Hallway/Hallway/Weightroom/Maze1/ && mv ~/HW1/.Maze2 ~/HW1/Maze2 >& /dev/null && rm -f u >& /dev/null && echo "A passage opens up.")'
+
+#18
+alias get='mv [fklpsw]*?*[eklprty] ~/HW1/items/ >& /dev/null; ls ~/HW1/items/weight >& /dev/null || echo "Done."; ls ~/HW1/items/weight >& /dev/null && (ls ~/HW1/items/[^wl]* >&/dev/null || echo "Done."); ls ~/HW1/items/weight >& /dev/null && ls ~/HW1/items/[^wl]* >& /dev/null && echo "You pick up as much as ypu can carry." && mv ~/HW1/items/*[^pt] ./ >& /dev/null; ls ~/HW1/items/lamp >& /dev/null && rm ~/HW1/items/.check >& /dev/null; show'
+
+#19
+alias counterclockwise='ls ~/Receiving_room/Hallway/Sauna/.sauna0 >& /dev/null && echo "The dial will turn no further in that direction." && echo ""; mv .sauna1 .sauna0 >& /dev/null && cat ~/HW1/msgs/sauna0; mv .sauna2 .sauna1 >& /dev/null && cat ~/HW1/msgs/sauna1; mv .sauna3 .sauna2 >& /dev/null && cat ~/HW1/msgs/sauna2; ls .sauna* >& /dev/null || cat ~/HW1/msgs/nosauna'
+
+#20
+alias clockwise='ls .sauna3 >& /dev/null && (cat ~/HW1/msgs/saunadeath && exit); ls .sauna2 >& /dev/null && cat ~/HW1/msgs/sauna3 && rm ~/HW1/items/floppy >& /dev/null && cat ~/HW1/msgs/floppy; mv .sauna2 .sauna3 >& /dev/null && mv ~/HW1/items/wax_statuette ~/HW1/items/diamond >& /dev/null && cat ~/HW1/msgs/wax; mv .sauna1 .sauna2 >& /dev/null && cat ~/HW1/msgs/sauna2; mv .sauna0 .sauna1 >& /dev/null && cat ~/HW1/msgs/sauna1; ls .sauna* >& /dev/null || cat ~/HW1/msgs/nosauna'
+
+#21
+alias quit='exit >& /dev/null'
+
+#22
+alias dunnet='PS1="> "; clear; cd ~; rm -fr HW1; tar -xvf B013040049.tar; cd ~/HW1/Receiving_room; show;'

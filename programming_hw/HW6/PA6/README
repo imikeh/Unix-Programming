@@ -1,0 +1,392 @@
+                         Programming Assignment 6
+                          Everything is Awksome                            
+
+Due: Sunday, June 21 at 7:00 PM. Yes, that's only a few days away. But, then: 
+                                    1) the assignment is short.
+                                    2) you'll be able to see the answers before
+				       the final.  Therefore: no extensions.
+
+Submission method: You will post to the course website, just like the other
+                   homeworks.
+
+Submission rules: I REQUIRE you to FOLLOW THESE RULES:
+
+                  1. Submit a single file.
+
+                  2. This file will be named "<your student ID>.PA6"
+                     You will, of course, replace "<your student ID>" with
+                     your unique ID number (B9.... or M9....)
+
+                  3. Submissions made after the due date will be ignored.
+                     (That means, no late submissions on this assignment.)
+                     (By the way, if you don't turn in your assignments, you
+                      will probably fail the course.)
+
+                  This is a large class. Unless each of you follows the above
+                  rules, the TAs' work becomes so hard. So I INSIST that you 
+                  FOLLOW the above rules. If you don't, we won't accept your 
+                  homework.
+
+Cheating policy:  If students are found to be sharing work, they will be 
+                  failed or worse. It is cheating to let another student see
+                  your work, or to look over your sholder when your code is on
+                  the screen.
+                  (In any event, even if you do not get caught, a student who
+                  copies the homework will not learn the material, so they will
+                  fail the final exam.)
+
+
+-------------------------------------------------------------------------------
+------------------------------- PROJECT SUMMARY -------------------------------
+-------------------------------------------------------------------------------
+
+You will implement a simple translator between English and German. (I chose
+German simply because I could find a dictionary online.) This assignment
+is designed to give you experience with the power of AWK and its associative
+arrays. 
+
+There are many issues to consider. But I have provided you with a template 
+file that has already solved some, but not all, of these issues:
+ 1. The program takes one argument, to indicate the direction of translation.
+    Passing in a '0' indicates German-to-English, whereas a '1' indicates
+    English-to-German. For example:
+    % cat glass.txt | ./[BMD][0-9]*.PA6 0
+
+
+ 2. The output file will be entirely capitalized (to keep things simpler):
+    % echo "looking-glass" | ./[BMD][0-9]*.PA6 0
+    SPIEGEL
+    % echo "spiegel" | ./[BMD][0-9]*.PA6 1 
+    LOOKING-GLASS
+
+
+ 3. Sometimes more than one word translates to the same word. 
+    % echo "mirror" | ./[BMD][0-9]*.PA6 0
+    SPIEGEL
+
+    But, when translated back, there can, of course, only be one choice:
+    % echo "looking-glass"|./[BMD][0-9]*.PA6 0|tee x; cat x|./[BMD][0-9]*.PA6 1
+    SPIEGEL
+    LOOKING-GLASS
+    % echo "mirror" | ./[BMD][0-9]*.PA6 0 | tee x; cat x | ./[BMD][0-9]*.PA6 1 
+    SPIEGEL
+    LOOKING-GLASS
+
+
+    So, why does spiegel get translated to looking-glass, instead of to the
+    more-common "mirror"? The answer is just that "looking-glass" is the first
+    match to "spiegel", from within the "gedict" file.
+
+
+ 4. Sometimes a word is not in the dictionary. In this case it should be left
+    untranslated:
+    % echo "added" | ./[BMD][0-9]*.PA6 0
+    ADDED
+
+
+ 5. Punctuation, spacing, and newlines must be preserved.
+
+
+ 6. Another issue is that there are phrases in one language which become a
+    single word in the other language:
+    % echo "Thank you" | ./[BMD][0-9]*.PA6 0
+    DANKE
+
+    In such a case, it would be wrong to translate the words individually
+    even if the had been on differently lines (i.e., if they had a newline
+    between them instead of a space).
+
+    Consider:
+    % echo "Added value tax" | ./[BMD][0-9]*.PA6 0
+    MEHRWERTSTEUER
+    % echo "Added  value  tax" | ./[BMD][0-9]*.PA6 0
+    ADDED  WERT  STEUER
+
+    First, we notice that there is a single German word for the English
+    phrase "added value tax". Second, we notice that extra spaces (or
+    punctuation) prevents the multi-word match from occuring, so the
+    matches are individual.
+
+    Let us also note that there is a two-word match to "added value",
+    but that it was not used above (because it was not the longest
+    match):
+    % echo "Added value  tax" | ./[BMD][0-9]*.PA6 0
+    WERTSCHOPFUNG  STEUER
+
+    Moving on, let us note that their is an even longer match that
+    includes the word tax:
+    % echo "tax and contribution ratio" | ./[BMD][0-9]*.PA6 0
+    ABGABENQUOTE
+
+    Thus the shortest translation of "added value tax and contribution
+    ratio" would be:
+    % echo "Added value  tax and contribution ratio" | ./[BMD][0-9]*.PA6 0
+    WERTSCHOPFUNG  ABGABENQUOTE
+
+    But note: the above output only occurs because I put two spaces
+    before "tax". Without those two space, we would get:
+    % echo "Added value tax and contribution ratio" | ./[BMD][0-9]*.PA6 0
+    MEHRWERTSTEUER UND SPENDE VERHALTNIS
+
+    In other words: the longest matching phrase is chosen, but it is a
+    greedy choice. In the example above, the inclusion of "tax" into
+    the word "mehrwertsteuer" prevented it from matching to "abgabenquote".
+
+
+ 7. In addition, the matching phrase is sometimes a hyphenated phrase:
+    % echo "looking-glass looking glass" | ./[BMD][0-9]*.PA6 0
+    SPIEGEL SUCHEN GLASS
+
+    In the dictionary, there is only a hyphenated phrase "LOOKING-GLASS";
+    there is not an entry for "LOOKING GLASS". So, if there is no hyphen,
+    then there is no match to the phrase (meaning that the words are meant
+    to be translated individually).
+
+
+
+For an example, consider part of the input file and its translation:
+% head -50 glass.txt | tail
+
+CHAPTER I. Looking-Glass house
+
+One thing was certain, that the WHITE kitten had had nothing to do with
+it:--it was the black kitten's fault entirely. For the white kitten had
+been having its face washed by the old cat for the last quarter of
+an hour (and bearing it pretty well, considering); so you see that it
+COULDN'T have had any hand in the mischief.
+
+The way Dinah washed her children's faces was this: first she held the
+% head -50 glass.txt | tail | ./PA6 0 | tee german
+
+TEIL I. SPIEGEL HAUS
+
+EINE DING WAR CERTAIN, DASS DIE WEISS KATZCHEN HATTE HATTE NICHTS ZU TUN MIT
+ES:--ES WAR DIE SCHWARZ KATZCHEN'S MANGEL ENTIRELY. FUR DIE WEISS KATZCHEN
+HATTE BEEN MIT ITS MIENE WASHED DURCH DIE ALT KATZE FUR DIE LAST VIERTELSTUNDE
+(UND LAGER ES PRETTY BRUNNEN, UNTER BERUCKSICHTIGUNG); SO SIE SEHEN DASS ES
+COULDN'T HAVE HATTE ANY HAND IN DIE UNHEIL.
+
+THE WEISE DINAH WASHED IHR KINDER'S GESICHTER WAR DIES: ERSTE SIE HELD DIE
+%
+
+And then if we pass the German version back through the translator:
+% cat german | ./PA6 1
+
+APPANAGE I. LOOKING-GLASS HOME
+
+ONE CONCERN WAS CERTAIN, THAT THE WHITE CATKIN HAD HAD NONENTITY TO DO HAVING
+IT:--IT WAS THE BLACK CATKIN'S DEARTH ENTIRELY. FOR THE WHITE CATKIN HAD BEEN
+HAVING ITS AIR WASHED BY THE OLD CAT FOR THE BASIC LOAD QUARTER OF AN HOUR
+(AND BEARING IT PRETTY FOUNTAIN, CONSIDERING); SO SHE SEE THAT IT COULDN'T
+HAVE HAD ANY HAND INTO THE MISCHIEF.
+
+THE WAY DINAH WASHED HER CHILDREN'S FACES WAS THIS: FIRST SHE HERO THE 
+%
+
+
+-------------------------------------------------------------------------------
+-------------------------------- PROVIDED FILES -------------------------------
+-------------------------------------------------------------------------------
+% ls
+awkftop  lglass.english  lglass.txt    README
+gedict   lglass.german   PA6.template
+
+-------------------------------------------------
+-- The sample input and output files: lglass.* --
+-------------------------------------------------
+The file "lglass.txt" is a sample English book. Two of the other provided
+files were create in the following way:
+% ./[BM][0-9]*.PA6 0 lglass.txt > lglass.german
+% ./[BM][0-9]*.PA6 1 lglass.german > lglass.english
+
+You can use these provided files to verify that your code is correct. If
+you inspect the retranslated English, you will see that some meaning has
+been lost in translation...
+
+------------------------------------------------
+--- The dictionary files: gedict and awkftop ---
+------------------------------------------------
+The "gedict" file is the dictionary. German words or phrases are on the
+left, and English words or phrases are on the right.
+
+The awkftop file is provided to help with your debugging. It contains the
+dictionary in AWK associative array format. Let us look at the top of it:
+% head -7 awkftop
+BEGIN{
+W["EEL"]="AAL"
+W["MORAY"]="AAL"
+W["CARRION"]="AAS"
+W["SCAVENGER"]="AASFRESSER"
+W["OFF"]="AB"
+W["EX WORKS"]="AB WERK"
+
+See how it works? Of course, the provided awkftop corresponds to an English-to-
+German translation.
+
+Now, here is how I created my awkftop file:
+% echo "whatever" | ./[BMD][0-9]*.PA6 0 > /dev/null; head -n 56108 awkf | sed '1s/{.*/{/' > awkftop 
+%
+
+See that? I took my final answer, ripped out the bottom lines, and took out
+some of line 1. So what is left is the initialization of the array, only.
+In order for you to generate the same result, you will need to have blanks c-g
+working correctly. (I'll define blanks c-g in a few paragraphs; they are on
+lines 3-4 of the provided template.)
+
+Now, what if you don't have c-g correct? Well, you could (with a little
+thought) still test blanks h-r, by using this awkftop answer.
+
+----------------------------------------------
+--- The answer template file, PA6.template ---
+----------------------------------------------
+The "PA6.template" file shows the basic structure and many of the details
+of your program. Your job is to fill in every "_".  The specific number
+of "_" symbols corresponds to the number of characters in my solution,
+but yours does not need to have the same number of characters.
+
+
+So, let's look at it (with some formatting to letterthe blanks for discussion):
+% sed = PA6.template | ~/IveFormattedThe18letteredBlanks
+1
+#!/usr/bin/tcsh
+2                                                  a         b        
+cat gedict|awk -F" :: " 'BEGIN{printf("BEGIN{FS=\"___\";RS=_____;ORS=\"\"\n")}\
+3                           c  d          c   d 
+                         {A=_(____?1:2);B=_(____?2:1)}\
+4                       e       f                                     g
+                     (____)&&(____){printf("W[\"%s\"]=\"%s\"\n",A,B);___}'>awkf
+5
+tail -19 [BMD][0-9]*.PA6 >> awkf
+6
+tr "a-z" "A-Z" | sed 's/\r//;s/^$/|/' | sed ':A;/|$/{N;s/\n//;bA;};s/--/=&=/g;s/[]:;,.?\!#$%^&*+_~/()<>{}"`'"'"'[]/=&=/g' | sed ':A;N;s/\n|/||/;tA;s/||*/=&=/g' | tr \\n \ | awk -f awkf | awk \
+7       h               i           j        k                   l  
+ 'BEGIN{__="|"}{gsub(_______);sub(____,"\n")}_' | sed \$d | awk -_ "" \
+8     m
+ '{______;while(upto+79<NF){for(i=upto+79;$i!=" ";i--);$i="\n";upto=i}upto=0}1'
+9
+exit
+10
+}{ nstart=1
+11
+   while(nstart<=NF)
+12
+   {  start=nstart
+13
+      from=$start
+14
+      for (i=1;i<=9;i++)
+15                 n
+      {  if (from ____)
+16                         o
+         {  translated=W[____]
+17
+	    nstart = start+i
+18
+	 }
+19              p            q 
+	 from=____" "$(start+_)    
+20
+      }
+21
+      if (start<nstart)
+22          r
+      {  ______=translated
+23
+         for (i=start+1;i<nstart;i++)
+24
+	    $i="~"
+25
+      } else
+26
+         nstart++	
+27
+   }
+28
+}$0!=" "
+
+
+
+Notice the 18 blanks with letters above them? Your assignment is to fill them
+in.
+
+-------------------------------------------------------------------------------
+--------------------------- BLANK-BY-BLANK DISCUSSION -------------------------
+-------------------------------------------------------------------------------
+
+a: Insert here the regular expression that makes AWK use SINGLE spaces as the
+   field seperator. Note: the lecture material pointed out that " " doesn't
+   work (although it logically should). Instead, the lecture notes indicate 
+   the rigt way to do it.
+
+b: This sets the record separator to the "=" symbol. (This symbol was chosen
+   because it does not occur in the sample textfile-to-translate.) If you 
+   examine the full program, you will see that line 6 of the code that I
+   provided surrounds each punctuation symbol (other than hyphens) with a pair
+   of "=" symbols.
+   This is done so that the punctuation will never be in the same record as 
+   the text -- and therefore will never be able to interfere with matching the
+   text to its translation.)
+
+c. This is the symbol that references a field within the record. For example,
+   if you wanted to print the 3rd field, you would say: print _3. What is "_"?
+   Note: Blanks c and d each occur twice on Line 3.
+
+d. Your script receives an parameter (0 for English-to-German, and 1 for 
+   German-to-English). This blank is for passing that parameter to AWK. If it 
+   is confusing, it is because the $ has a different meaning here than it 
+   has inside of AWK.
+
+e. Line 3 defined A and B. (A is a dictionary word in the language you're
+   translating from; B is the corresponding word in to language you are
+   translating into.) Now blanks 8 and 9 will use these variables.
+   Blank 8 tests for whether A is different than B. (We care about this,
+   because we will shrink the dictionary by not translating words into
+   themselves. Eg., the word "in" is spelled the same in both languages.)
+
+f. This blank test whether the new-word-to-translate-to, B, is different than
+   B from the previous line. (We care about this because we want just one entry
+   for each word-to-translate-from. Eg., the entry for the word "SPIEGEL" will
+   translate to "LOOKING-GLASS", not "MIRROR".)
+
+g. This sets the variable that was compared against A in Blank f. It will, on
+   the next record's iteration, hold the old value of A. So, its not-yet an old
+   value.
+
+h. This is the name of the record separator built-in variable.
+
+i. These are the arguments to the gsub function. Their purpose is to delete
+    all " ~" pairs in the current record. 
+      We need to do this because of multi-word matches:
+      - Line 24 of the template is: $i="~". The function of lines 23 and 24 is
+        to clear out the non-first words of a multi-word match.
+      - Line 24 couldn't just say: $i="", because the field separator would
+        add unwanted blanks that would not be distinguishable from an input 
+        with multiple blanks.
+        - But the "~" symbol can tell us that the preceding space is garbage.
+          - By the way: the "~" symbol was chosen because it does not occur
+            in the input testfile.
+
+j. This regular expression matches to a space at the end of the line.
+
+k. This command causes the record to print.
+
+l. This flag sets the field separator.
+
+m. This sets the output field separator to empty (i.e., nothing).
+
+n. This test for whether a translation exists for the word-or-phrase stored in
+   from.
+
+o. This accesses the array element holding the translation.
+
+p. This concatenates the next word onto the end of the phrase-to-translate.
+   The purpose of line 19 is to work with line 14. Line 14 is a for-loop. It 
+   is used to add the next up-to-9 words to the current word, in a search for
+   the longest match. Eg., "ADDED VALUE TAX" is prefered over "ADDED VALUE".
+
+   Now, on line 19, we've reached the end of the loop iteration, so we prepare
+   the next one-word-longer phrase for atempted translation.
+
+q. The variable inserted into this blank allows us to select the next word.
+
+r. This blank performs the substitution of the translated text.

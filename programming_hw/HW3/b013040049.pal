@@ -1,0 +1,23 @@
+#!/usr/bin/tcsh
+set V = "\([a-z]\)[^a-z]*"
+set L = "$V:q"
+set R
+cat $1 | grep -n . | tr "\n~" "~\n" > file
+foreach i ( `seq 9` )
+	set R = "[^a-z]*\$i$R:q" 
+	cat file | grep -io "[^~]*""$L:q$R:q""[^~]*" | grep -i --color=always "$L:q$R:q" > out0 
+	set L = "$L:q$V:q"
+	cat file | grep -io "[^~]*""$L:q$R:q""[^~]*" | grep -i --color=always "$L:q$R:q" > out1
+	if( (-z out0) && (-z out1) ) then
+		echo "Best palindrome is" `expr 2 \* \( $i - 1 \) + $temp` "letters long:" 
+		cat out | tr "~" "\n"
+		exit
+	else if( -z out1 ) then
+		set temp = 0
+	else
+		set temp = 1
+	endif
+	cp out[$temp] out
+end
+echo "Best palindrome is at least 18 letters long:"
+cat out0 out1 | tr "~" "\n" | sort -n

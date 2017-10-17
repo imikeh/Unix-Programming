@@ -1,0 +1,497 @@
+                          UNIX System Programming
+                          Programing Assignment #5
+                       "Nobody Sed It Would Be Easy"
+
+Due: Tuesday, June 9  at  11:59 pm.
+
+Submission method: You will post to the course website.
+
+Submission rules: I REQUIRE you to FOLLOW THESE RULES:
+
+                  1. Submit one sed file.
+
+                  2. The name of the file will be "<your student ID>.PA5"
+                     You will, of course, replace "<your student ID>" with
+                     your unique ID number (B9.... or M9....)
+
+                  3. Submissions made after the deadline will be ignored.
+                     (That means: no late submissions on this assignment.)
+                     (By the way, if you don't turn in your assignments, you
+                      will probably Fail The Class. That's a Fact. So start
+                      early and ask questions.)
+                  
+                  This is a large class. Unless each of you follows the above
+                  rules, the TAs' work becomes so hard. So I INSIST that you 
+                  FOLLOW the above rules. If you don't, we won't accept your 
+                  homework.
+
+                  If you have questions about these rules, you may post your 
+                  questions to the course website.
+
+
+Getting help:   - The Professor has office hours on Monday from 12:20-2:20, 
+                  and on Friday from 10:00-12:00, in room 9037.  He can also 
+                  be reached by email.
+                - The TAs are also available to answer your questions.
+                - Questions about the assignment can be posted to the 
+                  Discussion Forum.
+                - You may also discuss the ideas of the assignment with your
+                  classmates. Such discussion can be quite helpful to your 
+                  learning -- IF you ONLY talk about the concepts of the 
+                  assignment in the abstract. If, however, you discuss 
+                  specific implementation details of this assignment, then 
+                  you are not helping each others to learn; you are just 
+                  doing the work for them.
+		  And note: you may not share code. You CANNOT show another
+		  student ANY part of the answer to the assignment.
+
+Cheating policy:  If students are found to be sharing work, they will receive 
+                  a 0 for this course, or worse.
+                  It is cheating to let another student see your work, or to 
+                  let them look over your shoulder when your code is on the
+		  screen.
+                  We always look for evidence of cheating, so don't do it.
+                  (In any event, even if you do not get caught, a student who 
+                  copies the homework will not learn the material, so they 
+                  will fail the exam.)
+
+		  
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+CONCEPT:
+
+Suppose that I want a version of grep that allows matches to cross over
+multiple lines, in a "natural" way. If, for example, the user wanted to search
+a text file to find the phrase "sed is my favorite programming language", then
+it is possible that any of the spaces within the phrase might be a newline
+character instead of a space.
+
+In this assignment, I will not require you to create the multi-line-grep.
+But I will have you create the converter of the regular expression into its
+multi-line form.
+
+
+PROVIDED FILES:
+Let's see what we have in the untarred directory:
+% ls
+ins  outs  README  template  tests
+
+The "ins" file is a list of regular expressions to test. The "outs" file shows
+the expected outputs for each. The tests file is script I've given you to run
+the "ins" and get the "outs". The template is a concept of what your program
+should look like. Let's see it:
+
+% cat template
+#!/usr/bin/sed -f
+:L
+  .
+  .
+  ................bN
+  ...........
+  .
+  ........
+  .............
+  tX;:X
+  ...............
+  ...................
+  tL
+  ..........
+  ..........
+  :M
+    .
+    .
+    ...........
+    .
+    ........
+    ..........
+    .............
+    .......bL
+    .............
+    ...................
+    bM
+:N
+  .......
+
+The first thing to notice is that I've given you the labels and the commands
+that branch to them. The next thing to notice is that I've given you a concept
+of how many characters are needed to complete each line. If yours is shorter,
+it is probably(?) wrong. If yours is longer, it is unnecessarily long (but may
+still work correctly). And how will I grade answers that are longer than
+necessary? Answer: I will deduct 0.2% for each extra character that you use.
+Thus: If you use 20 extra characters overall in your program, then you will
+lose 4% of the points for this homework.
+
+
+Now, let's look at tests file:
+
+% cat tests
+#!/usr/bin/tcsh
+rm -f outtmp
+foreach x (`cat ins | wc -l | xargs seq`)
+  cat ins | sed $x\!d >> outtmp
+  cat ins | sed $x\!d | ./*.PA5 >> outtmp
+end
+cat outtmp | sed 's/$/...................................../;s/\(.\{37\}\).*/\1/;N;s/\n//'> outs
+
+What we see here is that it runs each line of ins individually. For each line,
+it first reprints the line to a tempfile. It then passes the line into your PA5
+program and sends the answer into the tempfile.
+
+So, when the foreach loop finishes and all lines have been tested, the tempfile
+will contain 2 lines for each input. The final line then uses sed to format a
+better output and to name it outs. In this file, the input regular expression
+is on the left and the converted form is on the right.
+
+Now Let's look at the input expressions:
+% cat ins
+\\[^] ] b
+[\\ \]b
+[\ ]\ 
+a b c
+   *a
+a[b ]c
+a [^ ] b
+a \[ \] b
+a [[] b
+[ ]*a
+ a
+\ a
+\\ a
+[] ] ] [[ ] ]
+[
+\
+
+Some of the above are not legal. But that's fine. I'm just testing that those
+ones don't hang. Their outputs are meant to be ignored.
+
+Now what are the outputs:
+% cat outs
+\\[^] ] b............................\\[^] \n][ \n]b
+[\\ \]b..............................b
+[\ ]\ ...............................[\ ]\ 
+a b c................................a[ \n]b[ \n]c
+   *a................................[ \n][ \n][ \n]*a
+a[b ]c...............................a[b \n]c
+a [^ ] b.............................a[ \n][^ \n][ \n]b
+a \[ \] b............................a[ \n]\[[ \n]\][ \n]b
+a [[] b..............................a[ \n][[][ \n]b
+[ ]*a................................[ \n]*a
+ a...................................[ \n]a
+\ a..................................\ a
+\\ a.................................\\[ \n]a
+[] ] ] [[ ] ]........................[] \n][ \n]][ \n][[ \n][ \n]]
+[....................................
+\....................................
+
+Comparing the ins with the outs, each outs line shows the corresponding ins
+line on the left. All of the answers on the right are correct conversions,
+except for the ones that correspond to bad syntax input expressions.
+The reasons for the outputs on the right may become clearer after the following
+discussion:
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Part 1. A discussion of the expected behavior of the converter:
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+At first, the problem might seem straight forward: sed 's/ /[ \\n]/g' > HWdone
+
+But it is actually more complicated, because of the "\" and "[" symbols in
+regular expressions. Consider the following:
+% echo "a[ ]b" | sed '/ /[ \\n]/g' > WrongAnswer
+
+The answer ("a[[ \n]]b") is wrong. It would match to the following strings:
+"a[]b", "a ]b", and "a\n]b" (here, \n is the newline character). Of course it
+should only match to the string "a b".
+
+So, the solution is that we need to deal differently with spaces that occur 
+inside of brackets (i.e., inside of "[...]"). For these spaces, we want to
+replace the space with " \\n" (as opposed to replacing with "[ \\n]").
+Now, sed does not have variables. So you cannot store a state (i.e., such as:
+insideBrackets or outsideBrackets). Instead, we'll handle the two cases in 
+different line regions of the sed code.
+
+But wait! It's actually more complicated than that. Because we have to be 
+careful that the brackets are real brackets. For example:
+echo "a\[ b" | sed -f aScriptThatThinksThereIsAnOpeningBracket > WrongAnswer
+
+So this means that we need to look for backslashes also. When we encounter 
+one, the next character must not be interpreted with special meaning. Here are
+some examples
+% echo "a\ b" | sed -f correctScript
+a\ b
+% echo "a[\ ]b" | sed -f correctScript
+a[\ ]b
+% echo "a[ ]b" | sed -f correctScript
+a[ \n]b
+% echo "a\[ \]b" | sed -f correctScript
+a\[[ \n]\]b
+% echo "a\\[ \\]b" | sed -f correctScript
+a\\[ \n]\\]b
+% echo "a\\[ \]b" | sed -f correctScript
+< The output here is unimportant, because the regular expression is flawed. My 
+  only requirement is that the computer should not hang.>
+
+Looking at the above examples, the first two illustrate that the backslash can
+be applied to a space, which will prevent the space from also matching to a
+newline character. The final example showed what happens when a bad regular
+expression is provided.
+
+But wait! It's actually more complicated than that. Because the bracket has a
+special behavior that you don't know about: If the first symbol after the open
+bracket is a close bracket, then that bracket is not treated as a closing 
+bracket. (It makes sense if you think about it: the bracketed list can't be
+empty). In other words:
+grep "[]ab]"  ==  grep "[\]ab]"  ==  grep "[a\]b]"  !=  grep "[a]b]" 
+
+And to make it just a bit more complicated, the first symbol after the bracket 
+could also be a "^" -- and if the next symbol is a close bracket, then that
+would also be an empty list, so the above-mentioned special behavior would 
+still apply. In other words:
+grep "[^]ab]"  == grep "[^\]ab]" ==  grep "[^a\]b]" !=  grep "[^a]b]" 
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - -
+Part 2. A discussion of the algorithm for converting:
+- - - - - - - - - - - - - - - - - - - - - - - - - - -
+In this algorithm, we split the input line (ie, the regular expression -- there
+is only one input line) into two parts:
+ 1 The part of the input line that we have finished processing will be stored
+   in the holdspace.
+ 2 The part of the input that we have not processed will be in the pattern 
+   space
+As things are processed, they are tacked onto the end of the hold space (and
+they are removed from the pattern space). The easiest way to do this is with 
+the H command. Although it inserts an unwanted newline before the tacked-on
+text, yet these newlines can be thrown away later.
+
+As we process the expression, we need to look for the special symbols. These
+are: 1. the "[" (for starting a wildcard character list), 2. the "\" (for
+turning off special meaning of the next character), and 3. the " " (which we
+need to convert into a space or a newline).
+
+Also note that the "[" is only a special symbol when we are not already inside
+of a list; if we are inside, then the "]" becomes the special symbol instead.
+To make this distinction, we will need to duplicated code: in the description
+below, you'll notice that lines 2-13 contain many similarities to lines 16-27.
+Lines 2-13 will deal with the case of being outside the brackets, where as
+lines 16-27 will deal with the case of being inside the brackets.
+
+An interesting part of the algorithm is how it identifies the next leftmost
+special symbol. (If that previous sentence was not clear, I could rephrase it:
+As we proceed with processing the expression, we will some portion stored in
+the hold space and the remainder in the pattern space. The remainder is what
+needs to be processed, and the act of processing requires us to know which
+special symbol, "[" or " " or "\", comes next.)
+
+But how to find the next leftmost special symbol? Sed doesn't have variables. 
+You don't explicitly search left to right. Instead we will use the feature of
+expression matching that it always finds the leftmost match. But how to use
+this for the effect we need? Consider so observations and facts:
+ 1. If I said "/ /bS" then I would know that there is a space still to process
+                      (because I will only reach label "S" in that case).
+    If I said "/\[/bB" then I would know that there's a bracket still to 
+                      process (because I only reach label "B" in that case).
+    But I don't know have any way to know (by this method) about which special
+    symbol is leftmost. You just know that they both are there.
+
+ 2. Regular expression matching, however, is left-to-right.
+
+ 3. But finding a match is not going to tell me which one matched. In other
+    words, "/[[ \\]/bL" will find the leftmost match -- but you won't know
+    which symbol was the matching one.
+
+ 4. To find out which symbol it is, you will have to mark it with some unique
+    other symbol that is not already in the pattern space. The symbol that we
+    will use for that purpose is the "\n".
+
+ 5. If the "s" command is used to place a "\n" after the matching special 
+    symbol, then you can examine (in later commands) which one of the three
+    symbols is now followed by a newline within the pattern space.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - -
+Part 3. A line by line description of the converter:
+- - - - - - - - - - - - - - - - - - - - - - - - - -
+The provided template file gives you an idea of the size of the commands of
+this converter. I will make reference to the lines from the template file, in
+discussing the design of this converter.
+
+Line  1: #!/usr/bin/sed -f
+Line  2: :L
+         The purpose of this label is so that later commands can loop back to
+         here. Every time that you reach line 2, the status of the two spaces
+         will be:
+         - Pattern space: Contains not just the unprocessed input, but also the
+                          most-recently processed part. 
+                          - This part will be distinguishable because it is at
+                            the front and is followed by a \n.
+                          - Obviously, this part will be missing on the first
+                            iteration (and there will be no \n). 
+         - hold space: Contains all of the earlier-processed input.
+                         - That is to say: everything but the most-recently
+                           processed part.
+                         - It will also contain useless newline characters.
+
+Lines 3-8: The primary purpose of these lines is to put the hold and pattern
+           spaces into the correct format so that (once line 8 finishes) the
+           program can move on to the task of processing more of the text. 
+           Earlier, it was said that the hold space should contain all of the
+           already-processed text. But the discussion of line 2, just above
+           here, has said that those are not the current contents of the hold
+           space.
+Line  3:   .
+The purpose of line 3 is to save the pattern space to the end of the hold space
+
+Line  4:   .
+The purpose of line 4 is to copy the hold space into the pattern space
+
+Line  5:   ................bN
+The purpose of line 5 is branch to N if there are no remaining special symbols 
+to process. N is line 28. It is almost at the end of the program, and this is 
+because the text is finished processing by the time that that line is reached.
+
+Line  6:   ...........
+The purpose of this line is to remove the final line from the pattern space.
+That is to say: to remove everything after the final \n. (We want to do this 
+because we are actually creating what will become the contents of the hold 
+space. Currently it is in the pattern space because we cannot directly operate 
+on the hold space -- it has to be brought into the pattern space (ie, line 4), 
+then operated on (ie, line 6), then put back into the hold space (ie, line 7).
+
+Line  7:   .
+The purpose of this line is to swap the pattern and hold spaces. As a result,
+the hold space will have the proper contents, but the pattern space will 
+contain everything, rather than just the last line.
+
+Line  8:   ........
+The purpose of this line is to get rid of everything but the last line, from
+within the pattern space.
+At this point, the work of lines 3-8 is done: the hold and pattern spaces each
+contain the correct contents.
+
+Line  9:   .............
+The purpose of line 9 is to insert a newline character after the leftmost 
+special symbol within the pattern space.
+Note: We know that substitution will occur, because we know that there must be
+      a special symbol remaining, because the branch on line 5 would otherwise
+      have been taken.
+Note: The concept of why we want to mark off the left most special symbol
+      has already been discussed at the end of Part 2, above.
+
+Line 10:   tX;:X
+The purpose of this line is to reset the condition for later "t" commands.
+Because the branch target is the same as the fall-through target, the tX;:X
+commands do not affect the program's control flow (regardless of whether the
+test succeeds or fails). But the execution of the t command does reset the 
+flag. The idea is a little confusing -- and had been said incorrectly in 
+lecture (see the revised notes for lectures 9-10 slide 134).
+
+Line 11:   ...............
+The purpose of this line is to deal with the case where the special symbol 
+marked off on line 9 is actually a space. In that case the space needs to be
+replaced with the regular expression that matches to a single character that
+can be either a space or a newline. The original newline that marked off the 
+special symbol must be retained.
+
+Line 12:   ...................
+The purpose of this line is to deal with the case where the special symbol 
+marked off on line 9 is actually a backslash. In that case the character that
+had originally come after the backslash (and which would now be coming after 
+the newline marker) needs to be moved to before the newline marker.
+Note: you do not need to worry about the case where there is no next symbol,
+      because that would be an error in the regular expression, and we don't
+      care what your program output in that case (as long as it doesn't hang).
+
+Line 13:   tL
+At this point, the space and backslash special symbol cases have been dealt 
+with. If either of these performed a successful substitution, then the test
+flag (which, just to recall, was reset on line 10) will now have been set.
+Therefore, the purpose of this line is to move on to processing the next 
+special symbol, by jumping back to line 2.
+
+Line 14:   ..........
+Since the branch on line 13 did not occur, the special symbol must be "[". The
+purpose of lines 14 and 15 is to handle the "^" and "]" symbols, respectively.
+To understand what I mean, recall that, at the end of Part 1, it was explained
+that these two symbols had to be handled differently when they came immediately
+after the "[".
+
+As for line 14, it attempts to move the "^" to before the newline marker. (The
+attempt is successful when there actually is a ^ immediately after the "[", of
+course. And also, of course, having been immediately after the "[" now means
+being immediately after the newline marker.)
+
+
+Line 15:   ..........
+The purpose of this line is just like line 14. But, in this case, we attempt to
+move the "]" symbol to before the newline marker.
+
+Lines 16-27: It was mentioned, back in Part 2, that lines 16-27 were very 
+             similar to lines 2-13. The key differences are:
+             - Since we are inside a square bracket, the special symbol "[" is
+               no longer special. Instead, the "]" symbol is special.
+             - Since we are inside the square bracket, the space does not get
+               brackets added when it is expanded to a space or a newline.
+
+Line 16:   :M
+The purpose of this line is analogous to Line 2. It becomes the place to branch
+to when continuing to process more text from still within the brackets.
+
+Line 17:     .
+This is identical to line 3.
+
+Line 18:     .
+This is identical to line 4.
+
+Line 19:     ...........
+This is identical to line 6.
+(You will notice that line 5 has no counterpart here, because we assume there
+must be another special symbol, because the square brackets need to end: if
+there wasn't then you are allowed to output anything (so long as it doesn't
+hang) because the input regular expression is bad syntax.)
+
+Line 20:     .
+This is identical to line 7.
+
+Line 21:     ........
+This is identical to line 8.
+
+Line 22:     ..........
+The purpose of this line is to quit if there is no special symbol in the 
+pattern space. The reason to do this is to prevent the program from hanging 
+when a bracket is never closed, due to bad syntax in the provided expression.
+
+Line 23:     .............
+This is similar to line 9, except that the special symbol "[" is not special
+now -- instead, "]" is special.
+
+Line 24:     .......bL
+The purpose of this line is to see if the leftmost special symbol is the "]".
+If it is, then we are no longer inside of the square brackets. Thus, we leave
+this special region (ie, lines 16-27) and go back to normal processing (ie,
+lines 2-13). The reason to branch to L (which is line 2) is because the newline
+marker is already to the right of the "]", so we are ready to move the "]" into
+the hold space.
+
+Line 25:     .............
+This is similar to line 11, except that we want to replace the space with just
+a space and a newline -- we do not here want to enclose them within open-and-
+close square brackets.
+
+Line 26:     ...................
+This is identical to line 12.
+
+Line 27:     bM
+The purpose of this line is analogous to line 13. The special symbol has been
+processed, o we move on to the next symbol. But we are still inside of the 
+square brackets, so we don't branch to L but instead to M.
+
+Line 28: :N
+This line is the target for the branch on line 5. You only reach here when all
+input has been processed and the pattern space holds everything (because of 
+lines 3 and 4).
+
+Line 29:   .......
+The purpose of this line is to remove all newline characters from the pattern
+space.
+
+At this point the program ends, so the pattern space is printed (by default, 
+without doing anything, because there was no -f flag used).

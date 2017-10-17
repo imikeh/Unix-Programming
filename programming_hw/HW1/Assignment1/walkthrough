@@ -1,0 +1,193 @@
+$ sh
+$ source ~/dunnet
+$ dunnet
+Receiving_room
+You are in a round, stone room with a door to the east.  There
+is a sign on the wall that reads: 'receiving room'.
+Visible exits: e  .
+Items present: key  lamp  paper  shovel  .
+
+It is very dark. You are likely to be eaten by a grue.
+
+> get
+Done.
+Receiving_room
+Visible exits: e  .
+Items present: .
+> e
+Hallway
+You are at the south end of a hallway that leads to the north.  There
+are rooms to the east and west.
+Visible exits: e  n  w  .
+Items present: .
+> n
+Hallway
+You are at the end of a north/south hallway.  You can go back to the south,
+or off to a room to the east.
+Visible exits: e  s  .
+Items present: .
+> e
+Weightroom
+You are in an old weight room.  All of the equipment is either destroyed
+or completely broken.  There is a door out to the west, and there is a ladder
+leading down a hole in the floor.
+Visible exits: d  w  .
+Items present: lifepreserver  weight  .
+> get
+You pick up as much as you can carry.
+Weightroom
+Visible exits: d  w  .
+Items present: key  lifepreserver  paper  shovel  .
+> d
+Maze1
+You are in a maze of twisty little passages, all alike.
+Visible exits: u  .
+Items present: button	.
+> dropweight
+Done.
+A passage opens up.
+> nw
+Maze2
+You are in a maze of little twisty passages, all alike.
+Visible exits: .
+Items present: .
+> u
+Maze3
+You are in a maze of thirsty little passages, all alike.
+Visible exits: .
+Items present: floppy_disk  wax_statuette  .
+> get
+Done.
+Maze3
+Visible exits: .
+Items present: .
+> se
+Maze4
+You are in a maze of twenty little passages, all alike.
+Visible exits: .
+Items present: .
+> d
+Maze5
+You are in a daze of twisty little passages, all alike.
+Visible exits: .
+Items present: .
+> nw
+Maze6w
+You are in a maze of twisty little cabbages, all alike.
+Visible exits: .
+Items present: .
+> ne
+Weightroom
+Visible exits: d  w  .
+Items present: key  lifepreserver  paper  shovel  .
+> get
+Done.
+Weightroom
+Visible exits: d  w  .
+Items present: .
+> w
+Hallway
+Visible exits: e  s  .
+Items present: .
+> s
+Hallway
+Visible exits: e  n  w  .
+Items present: .
+> dropfloppy
+Done.
+> e
+Sauna
+You are in a sauna.  There is nothing in the room except for a dial
+on the wall.  A door leads out to west.
+Visible exits: w  .
+Items present: dial  .
+> clockwise
+It is now lukewarm in here. You are perspiring.
+
+> clockwise
+It is pretty hot in here. It is still very comfortable.
+
+> inv
+Items in your inventory: key  lamp  lifepreserver  paper  shovel  wax_statuette	.
+> clockwise
+It is now vet hot. There is something refreshing about this.
+
+You notice the wax on your statuette beginning to melt, until it completely
+melts off. You are left with a beautiful diamond!
+> inv
+Items in your inventory: diamond  key  lamp  lifepreserver  paper  shovel  .
+> w
+Hallway
+Visible exits: e  n  w  .
+Items present: floppy_disk  .
+> get
+Done.
+Hallway
+Visible exits: e  n  w  .
+Items present: .
+> n
+Hallway
+Visible exits: e  s  .
+Items present: .
+> e
+Weightroom
+Visible exits: d  w  .
+Items present: .
+> d
+Maze1
+Visible exits: .
+Items present: button	weight	.
+> nw
+Maze2
+Visible exits: .
+Items present: .
+> u
+Maze3
+Visible exits: .
+Items present: .
+> se
+Maze4
+Visible exits: .
+Items present: .
+> d
+Maze5
+Visible exits: .
+Items present: .
+> nw
+Maze6
+Visible exits: .
+Items present: n.
+> nw
+Reception_area
+You are in a reception area for a health and fitness center.  The place
+appears to have been recently ransacked, and nothing is left.  There is
+a door out to the south, and a crawlspace to the southeast.
+Visible exits: se  s  .
+Items present: .
+> s
+Healthclub_front
+You are outside a large building to the north which used to be a health
+and fitness center.  A road leads to the south.
+Visible exits: n  s  .
+Items present: .
+> s
+Northern_lakefront
+You are at the north side of a lake.  On the other side you can see
+a road which leads to a cave.  The water appears very deep.
+Visible exits: n  s  .
+Items present: .
+> s
+Southern_lakefront
+You are at the south side of a lake.  A road goes to the south.
+Visible exits: n  s  .
+Items present: .
+> s
+Cave_entrance
+The entrance to a cave is to the south.  To the north, a road leads
+towards a deep lake.
+Visible exits: .
+Items present: congratulations_sign  .
+
+You win.
+exit
+$

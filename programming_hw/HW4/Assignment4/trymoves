@@ -1,0 +1,145 @@
+#!/usr/bin/tcsh
+###############################################################################
+# This is a recursive script. The beforemove file contains the current state  #
+# of the board. The parameters are:                                           #
+#  $1: The marker symbol to place on this iteration (i.e., "X" or "O").       #
+#  $2: A value to indicate whether this is an iteration for the user (a fact  #
+#      that would be indicated by a value of 0) or for the computer (as would #
+#      be indicated by a value of 1).                                         #
+#  $3: A value to indicate whether this is the top-level of recursion. If it  #
+#      is the top level of recursion, then the move is a real move and a win  #
+#      is a real win. If, however, it is not the top-level of recursion, then #
+#      the moves are only hypothetical, so a win just indicates the potential #
+#      for a win, if the chain of choices from the top-level down to this     #
+#      level end up actually getting played, in that order.                   #
+#                                                                             #
+# The returned value of the script is one of 4 values:                        #
+# 0 - The player making the current move has a place that they can choose     #
+#     which will guarantee a win (either immediately or at a later level of   #
+#     recursion).                                                             #
+# 1 - The player making the current move has no place that they can move to   #
+#     that could avoid causing the player to lose (either immediately or at a #
+#     later level of recursion).                                              #
+# 2 - The player can expect to achieve a tie (assuming the opponent doesn't   #
+#     make a mistake.                                                         #
+# Unimportant - When the return value doesn't matter (because the game has    #
+#     finished) then it may happen that no argument is provided to the exit   #
+#     command. In this case, the returned value is actually 0 -- but, more    #
+#     to the point, the returned value is unimportant.                        #
+###############################################################################
+
+
+#################################################
+# The following section initializes some things #
+#################################################
+if ( $1 == X ) set label = O
+if ( $1 == O ) set label = X
+@ countlose = 0
+@ n = `cat beforemove | grep -o "[a-i]" | wc -l`
+cp beforemove unique$n:q	
+
+###############################################################################
+# The following section is an optimization to choose the first computer move. #
+#  - It is helpful to perform this optimization because the search space is   #
+#    significantly larger on the first move.                                  #
+#  - It is feasible to perform this optimization, because the algorithm for   #
+#    choosing the first move is simple.                                       #
+# If this section was removed, then the game would still run, but more slowly.#
+###############################################################################
+if ( $n >= 8 ) then
+  if ( $n == 8 ) then
+    set alch = ( 4 1247 4 1645 1368 3854 5 7852 5 )
+    set position = `cat beforemove | tr -d "\n" | sed 's/[a-iOX]/&\n/g' | sed -n '/[OX]/ ='`
+    set ch = $alch[$position]
+  else
+    set ch = 135579
+  endif
+  ./makeamove $1 `echo $ch | sed 's/./&\n/g' | sort -R | head -1`
+  ./yourmove $label:q
+  exit
+endif
+
+###############################################################################
+# The following section tries each available position, looking for a winner.  #
+# If a winner is found, then there are three cases:                           #
+#  1. The computer has won.                                                   #
+#       This current iteration of the trymoves script is the top iteration (as#
+#       indicated by the value of the third parameter). Now, because it is the#
+#       top iteration, we can know that the current iteration is considering  #
+#       computer moves.                                                       #
+#  2. The computer could win under this hypothetical scenario.                #
+#       This happens when the current iteration is for the computer, but it   #
+#       is not the top level of recursion.                                    #
+#  3. The player could win under this hypothetical scenario.                  #
+#       This happens when the current iteration is for the player.            #
+#       But, recall that the computer is never supposed to lose. Thus this    #
+#       hypothetical scenario is unacceptable; the computer needs to not      #
+#       follow this scenario. That means exiting with a fail value.           #
+###############################################################################
+foreach c ( `seq 1 $n:q` )
+  cp unique$n:q beforemove
+  ./makeamove $1 $c
+  if ( $? == 0 ) then
+    if ( $3 == 1 ) cat aftermove|sed -e '1 i \\n"The computer wins:"' -e '$ a \\n'
+    exit 0
+  endif
+end
+
+###############################################################################
+# The following section handles ties where the computer has the last move.    #
+# Ties where the user has the last move are handled by the yourmoves script.  #
+# The only way to get a tie on a computer move is if the board is full and it #
+# is the top level of recursion.                                              #
+###############################################################################
+if ( $n == 1 ) then
+  if ( $3 == 1 ) cat aftermove | sed -e '1 i \\n"It is a tie:"' -e '$ a \\n'
+  exit 2
+endif
+
+###############################################################################
+# The following section reevaluates all of the available board positions. It  #
+# is known that none of these positions produced a winner, and it is known    #
+# that the board is not full (because the previous sections would have caught #
+# these cases and would have exited before reaching here).                    #
+#                                                                             #
+# If the current iteration is for the top-level of recursion, then we want to:#
+#  - Determine if there exists any available board position that can guarantee#
+#    a win for the computer, at some later point in the playing of the game.  #
+#    If so, then make that move and pass control to the player to then make   #
+#    his or her move.                                                         #
+#  - Or, if no such position could be found, then identify some available     #
+#    position that can guarantee that the user can't win. Make that move and  #
+#    pass control to the user to then make his or her move.                   #
+#    Note: such a position always exists, because the computer never loses.   #
+#                                                                             #
+# If not the top level of recursion, then:                                    #
+#  - Determine if there exists any available board position that can guarantee#
+#    a win for the computer, at some later point in the playing of the game.  #
+#    If so, return the code for "win."                                        #
+#  - Determine if every available board position guarantees a win for the     #
+#    user, at some later point in the playing of the game (assuming that the  #
+#    user doesn't make any mistakes). If so, return the code for "lose."      #
+#  - If neither of the above is happens then, return the code for "tie."      #
+###############################################################################
+foreach c ( `seq $n | sort -R` )
+  cp unique$n:q beforemove
+  ./makeamove $1 $c
+   cp aftermove aftermove$n:q
+  ./trymoves $label:q `echo $2 | tr "01" "10"` `expr $3 + 1`
+  switch ( $? )
+    case  1:
+      cp aftermove$n:q aftermove
+      if ( $3 == 1 ) ./yourmove $label:q
+      exit 0
+    case 0:
+      @ countlose = $countlose:q + 1
+      breaksw
+    case 2:
+      cp aftermove$n:q temp$n
+  endsw
+end
+
+if ( $countlose:q == $n ) exit 1
+if ( $3 != 1 ) exit 2
+mv temp$n aftermove
+./yourmove $label:q

@@ -1,0 +1,76 @@
+Three points of discussion:
+1. A student has pointed out some problems with the map I gave you:
+- The map shows no path west from the Hallway back to the Receiving_room.
+- The map shows no path north from the Healthclub_front to the Reception_area
+
+Both of these were mistakes in the README file (similar to the earlier noted
+mistake of the mislabelled (should be "w" not "d") edge from Maze4 to Maze2.
+
+I'm just following the connections that I observed in the actual game.
+
+I have provided you with a new file READMEnew, attached to this posting. It
+has fixed all three of the above-mentioned mistakes (2 new and 1 old). These
+changes can be seen by running:
+
+% diff READMEnew README | head -16
+105c105
+<                                                    s
+---
+> 
+107,109c107,109
+<       |^                                 ^|     <-------      |^
+<      e||w                              nw||se      n         s||n
+<       V|     e                           |V                   V|
+---
+>        |                                 ^|        s          |^
+>       e|                               nw||se                s||n
+>        V     e                           |V                   V|
+120c120
+<      d||u(maybe)            u||d,e,s    |w     |
+---
+>      d||u(maybe)            u||d,e,s    |d     |
+
+
+ *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *
+
+2. A student also pointed out other missing edges from the map in the README
+file. In this case, the map is actually correct (because it does not show loop-
+back edges). The README file had discussed this topic in 2 places, but I have
+added a third place, to make things clearer, as can be seen by running:
+
+% diff READMEnew README | head -23 | tail -7
+152,155c152
+<    also provide you with a map of the connections (it is earlier in this README
+<    file). Note that the map shows only the paths that lead to new places.
+<    (Within the maze, some paths loop back on themselves. See lines 488-493 and
+<    lines 274-295 for a discussion of which paths these are.)
+---
+>    also provide you with a map of the connections farther down in this file.
+
+
+The above text fixes a mistatement about the map being below (when it was
+actually above). The text also points you to the line numbers (in READMEnew)
+where you can get more information about this topic.
+
+
+ *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *
+
+3. I also fixed another typo that I spotted. (Of could -> Of course)
+And I updated the discussion of the "cmd1 || ( cmd2 && cmd3 )" behavior. What
+I mean is: an earlier posting about the homework had described this problem,
+and the READMEnew file therefore has an updated-and-now correct discussion of
+the "cmd1 || ( cmd2 && cmd3 )" behavior. These changes can be seen by running:
+
+% diff READMEnew README | tail -12
+290c287
+<      direction. And, of course, if you type "nw" then you would go to Maze2,
+---
+>      direction. And, of could, if you type "nw" then you would go to Maze2,
+584c581
+<  cmd1 || cmd2 && cmd3   if cmd1 SUCCEEDS then cmd2 SKIPS but cmd3 RUNS.
+---
+>  cmd1 || cmd2 && cmd3   if cmd1 FAILS and cmd2 SUCCEEDS then cmd3 does NOT RUN.
+587c584
+<  cmd1 || ( cmd2 && cmd3 )  if cmd1 SUCCEEDS then cmd2 and cmd3 both SKIP.
+---
+>  cmd1 || ( cmd2 && cmd3 )  if cmd1 FAILS and cmd2 SUCCEEDS then cmd3 RUNS.

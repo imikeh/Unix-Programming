@@ -1,0 +1,78 @@
+#!/usr/bin/tcsh
+# Insert your codename here
+if ( $# == 0 ) then
+  echo "Cut program -- interactive mode"
+  echo
+  echo -n "Do you want to select [C]olumns or [F]ields? (f/c/q) : "
+  while ( 1 )
+    set argv = `echo "-"$<:q | tr "FCQ" "fcq"`
+    if ( x$argv:q =~ "x-q*") then
+      exit 0
+    else if (x$argv:q == "x-f") then
+      echo -n "Please enter the delimiter (default = tab) : "
+      while ( $?done == 0 )
+        set z = $<:q
+        switch ( `echo $z:q | wc -c` )
+	  case 2:
+	    set argv = ( -d$z:q -f )
+	  case 1:
+	    set done
+	    breaksw
+          default:
+	    echo -n "The delimiter must be a single character : "
+        endsw  
+      end  
+      set type = "field"
+      break	
+    else if (x$argv:q == "x-c") then
+      set type = "column"
+      break	
+    endif
+    echo -n "You must choose either [C]olumns or [F]ields (or else quit) : "
+  end
+
+  echo -n "Are the selected "$type"s meant to be [C]ut or [K]ept? (c/k/q) : "
+  set x = `echo $<:q | tr "CKQ" "ckq"`
+  while ( x$x !~ "x[ck]" ) 
+    if ( x$x =~ "xq*") exit 0
+    echo -n "You must choose either to [C]ut or [K]eep (or else [Q]uit) : "
+    set x = `echo $<:q | tr "CKQ" "ckq"`
+  end
+  if ( $x == "c" ) set argv = ( -C $argv:q )  
+
+  while ( 1 )
+    echo -n "Please enter a $type number or range of numbers: "
+    set z = $<:q
+    if ( x$z =~ "xq*") exit 0
+    while ( `echo $z:q |tr "-" " " |xargs seq |& tr -dc "0-9"|wc -c` == 0 )
+      echo -n "Invalid range. Please enter a valid range (or else [Q]uit) : "
+      set z = $<:q
+      if ( x$z =~ "xq*") exit 0
+    end
+    set argv = ( $argv:q"$z" )
+    echo -n "Do you want to add more $type"s"? (Y/N): "
+    set more = $<
+    if ( $more !~ "[Yy]*" ) break
+    set argv = ( $argv:q"," )
+  end 
+
+  while ( 1 )
+    echo -n "Please enter the file name : "
+    set f = $<:q
+    if ( -e $f ) break
+    echo "File not found."
+  end	 
+  set argv = ( $argv:q "$f" )
+endif
+
+#set echo
+foreach i ( `seq $#` )
+  if ( x$argv[$i]:q == "x-C" ) set argv[$i] = "--complement"
+  if ( x$argv[$i]:q =~ "x-o*" ) \
+    set argv[$i] = "--output-delimiter=`echo $argv[$i]|tr -d o-`"
+end
+
+set echo
+ #   set verbose
+  cut $*:q
+    

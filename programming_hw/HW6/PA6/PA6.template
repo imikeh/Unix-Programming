@@ -1,0 +1,28 @@
+#!/usr/bin/tcsh
+cat gedict|awk -F" :: " 'BEGIN{printf("BEGIN{FS=\"___\";RS=_____;ORS=\"\"\n")}\
+                         {A=_(____?1:2);B=_(____?2:1)}\
+                     (____)&&(____){printf("W[\"%s\"]=\"%s\"\n",A,B);___}'>awkf
+tail -19 [BMD][0-9]*.PA6 >> awkf
+tr "a-z" "A-Z" | sed 's/\r//;s/^$/|/' | sed ':A;/|$/{N;s/\n//;bA;};s/--/=&=/g;s/[]:;,.?\!#$%^&*+_~/()<>{}"`'"'"'[]/=&=/g' | sed ':A;N;s/\n|/||/;tA;s/||*/=&=/g' | tr \\n \ | awk -f awkf | awk \
+ 'BEGIN{__="|"}{gsub(_______);sub(____,"\n")}_' | sed \$d | awk -_ "" \
+ '{______;while(upto+79<NF){for(i=upto+79;$i!=" ";i--);$i="\n";upto=i}upto=0}1'
+exit
+}{ nstart=1
+   while(nstart<=NF)
+   {  start=nstart
+      from=$start
+      for (i=1;i<=9;i++)
+      {  if (from ____)
+         {  translated=W[____]
+	    nstart = start+i
+	 }
+	 from=____" "$(start+_)    
+      }
+      if (start<nstart)
+      {  ______=translated
+         for (i=start+1;i<nstart;i++)
+	    $i="~"
+      } else
+         nstart++	
+   }
+}$0!=" "

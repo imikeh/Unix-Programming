@@ -1,0 +1,428 @@
+                          UNIX System Programming
+                         Programming Assignment #2
+                             "Making the Cut"
+
+Due: Saturday, April 18  at  11:59 pm.
+
+Submission method: You will post to the course website.
+
+Submission rules: I REQUIRE you to FOLLOW THESE RULES:
+
+                  1. Submit one text file.
+
+                  2. The name of these files will be "<your student ID>.cut"
+                     You will, of course, replace "<your student ID>" with
+                     your unique ID number (B9.... or M9....)
+
+                  3. Submissions made after the deadline will be ignored.
+                     (That means, no late submissions on this assignment.)
+                     (By the way, if you don't turn in your assignments, you
+                      will probably Fail The Class. That's a Fact. So start
+                      early and ask questions.)
+                  
+                  This is a large class. Unless each of you follows the above
+                  rules, the TAs' work becomes so hard. So I INSIST that you 
+                  FOLLOW the above rules. If you don't, we won't accept your 
+                  homework.
+
+                  If you have questions about these rules, you may post your 
+                  questions to the course website.
+
+
+Getting help:   - The Professor has office hours on Monday from 12:20-2:20, 
+                  and on Friday from 10:00-12:00, in room 9037.  He can also 
+                  be reached by email.
+                - The TAs are also available to answer your questions.
+                - Questions about the assignment can be posted to the 
+                  Discussion Forum.
+                - You may also discuss the ideas of the assignment with your
+                  classmates. Such discussion can be quite helpful to your 
+                  learning -- IF you ONLY talk about the concepts of the 
+                  assignment in the abstract. If, however, you discuss 
+                  specific implementation details of this assignment, then 
+                  you are not helping each others to learn; you are just 
+                  doing the work for them.
+		  And note: you may not share code. You CANNOT show another
+		  student ANY part of the answer to the assignment.
+
+Cheating policy:  If students are found to be sharing work, they will receive 
+                  a 0 for this course, or worse.
+                  It is cheating to let another student see your work, or to 
+                  let them look over your shoulder when your code is on the
+		  screen.
+                  We always look for evidence of cheating, so don't do it.
+                  (In any event, even if you do not get caught, a student who 
+                  copies the homework will not learn the material, so they 
+                  will fail the exam.)
+
+		  
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Assignment Summary:
+
+Part 1. The Concept of the Assignment
+"""""""""""""""""""""""""""""""""""""
+Earlier, we learned about the cut command (slide 70 to 75 of Lecture 3). 
+At that time I complained about the awkwardness of having to type the long
+"--complemement" to reverse the matched columns (or fields). Wouldn't it
+have been better to have provided a one-character flag, "-C"? 
+
+Yes, it would have been better. And now this assignment will let us do so.
+The assignment also provides a similar flag "-o" for cut's "--output-delimiter"
+flag.
+
+In addition, your assignment will also allow an interactive mode, where the
+settings are prompted for and then typed at the keyboard, rather than being 
+pulled from the command line arguments.
+
+So you are making a better version of cut. 
+
+This involves three steps:
+ 1 Receive the required settings from either the command-line arguments or from
+   the keyboard.
+ 2 Convert these settings into the format of the arguments desired by cut
+ 3 Run the original cut with your newly converted arguments
+
+
+
+Part 2. Provided files
+""""""""""""""""""""""
+The directory containing this README file contains two additional files:
+% ls
+README  sampleruns  testfile
+
+The testfile is a short file that contains lines of text, with fields separated
+in various ways.
+
+The sampleruns file is long. Read it. It provides many input examples and 
+their corresponding outputs. And it also has detailed explanations for why
+the inputs and outputs are as shown.
+
+
+Part 3. A line-by-line description of the your cut script:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Line 1:  #!/usr/bin/tcsh
+
+Line 2:  This line is a comment. The contents of the comment is a CODENAME.
+          - The codename must be 6 to 8 characters and contain no spaces.
+          - The codename should begin in the second column of line 2 (because
+            it cannot start in the first column, since that column must contain
+            the # symbol to indicate the comment. 
+         The purpose of the codename is so that we can anonymously post the
+            students' grades for each assignment. 
+         Therefore, the codename will be public. Consequently, it should:
+          - not be easily connected to your name, nickname, student ID, etc.
+          - not be offensive or vulgar.
+
+Lines 3-66: These lines are if-block to deal with the interactive mode.
+
+Line 3: Tests if there were no arguments provided to the script.
+
+Line 4: echo "Cut program -- interactive mode"
+
+Line 5: Uses echo to print an empty line
+
+Line 6: Asks whether you want columns or fields or if you want to quit.
+        The cursor must not advance to the next line. \
+        The specific text is up to you, but you can choose to match the
+        phrasing that I used in the sampleruns file.
+
+Lines 7-32: Implements a loop to let the user select fields or columns.
+
+Line 7: Starts an infinite loop
+  Line 8: This line:
+   1. Reads an input from the keyboard
+   2. Inserts a "-" in front of it
+   3. Makes it lower-case (because the interactive mode is not case sensitive).
+   4. Places the result into the "argv" variable
+
+   Several points must be made:
+     1. The writing to the argv file would normally be dangerous, because it
+        would kill the arguments passed into the program. But, in this case,
+        it is OK, because line 3 has ensured that there were no arguments, or
+        else we would not have reached this present line 7.
+     2. The reason that we are writing to the argv variable is because we are
+        preparing the command line from keyboard inputs. By the time we exit
+        this section on line 66, the argv array will be in the same format
+        as it would have been in had command-line arguments been provided.
+     3. The argv variable is usually an array. But here, at this moment, it
+        is a single value (i.e., a scalar).
+     4. The reason for adding the "-" in the front is because we are creating 
+        a flag ("-f" or "-c") in the same format that cut likes.
+
+   So how to do it? Well:
+     1. Use echo to receive keyboard input and to add the "-"
+        - And include a :q to ensure that odd typed symbols don't produce odd 
+          behavior. (For example, in a directory where the only file is named
+          "C", you would not want the user's typing of * to be interpreted as
+          choosing [C]olumns.) This idea comes from Lecture 4, slides 39-41.
+     2. Also use the set, tr, and `` commands.
+
+  Line 9: This line tests for whether the user has decided to quit.
+    To perform this test, you will assume that any input which began with "q"
+    (such as: Q, q, Quit, quit, quidditch, QQ, etc) is an indicator of wanting
+    to quit. 
+    Note: To make this work, you will need to remember slide 46 of Lecture 5
+          and also slides 77-84 of Lecture 5.
+    Also note: use the ":q" again (like in slides 39-41 of Lecture 4, but this
+          time not with keyboard input but for a regular variable -- i.e.,
+          $argv:q). 
+         In fact, I'm going to stop saying it, but you must use the :q anytime
+         you access a variable whose value might contain special symbols.
+
+    Line 10: if line 9 evaluated to true, then we exit with the number that
+      indicates success.
+        
+  Line 11: This is an else-if. It test for the "-f" flag. Again remember slides
+      39-41 of Lecture 4 and slides 77-84 of Lecture 5.
+      Just always remember those slides. I won't remind you about them again.
+
+    Lines 12-26 are for when the user has requested fields
+
+    Line 12: Asks for the delimiter. Does not advance the cursor.
+    
+    Lines 13-24: this is a loop to obtain a valid delimiter
+    
+    Line 13: Loop on the non-existence of some boolean variable (see slide 8
+             of Lecture 5). You may choose your own name for this variable. 
+             And of course, since you haven't defined it yet (in lines 1-12),
+             the loop will clearly enter for at least one iteration.
+
+      Line 14: Read keyboard input into a variable of your choosing
+
+      Line 15: A switch statement based on how many characters are in the
+               keyboard input from line 14.
+               this uses echo, wc (with flag), and ``
+        Line 16: This is the case for 2 characters.
+                 Note, when you use wc to count characters, there is always one
+                 extra at the end. So "2 characters" actually means that the
+                 use typed one character -- And one character is an acceptable
+                 delimiter.
+          Line 17: Since the user has specified a delimiter, we need to make
+                   the properly-formatted argument for cut.
+                   If the user had typed:
+                     "," then the proper argument would be "-d,"
+                     ":" then the proper argument would be "-d:", etc
+                     To keep things simple, let's assume that the user will
+                     NEVER type a space or a tab.
+
+                  Now, how to make this properly-formatted argument?
+                  Answer: You will create an array, argv from the currently
+                          scalar argv. The new array will have the delimiter
+                          flag-and-actual-character at the front, while the 
+                          original value of argv becomes the second element of
+                          the array. (See slide 29 of lecture 4.)
+
+        Line 18: This is the case for 1 character. There are two ways to get
+                 here: 
+                 1 By hitting enter without typing a character first. In this
+                   case, you have requested the default (which is a tab 
+                   character, and which does not require specifying a -d flag).
+                 2 By falling into this case from the one above it (because we
+                   did not break out).
+ 
+          Line 19: This line sets the boolean variable that you had tested back
+                   on line 13.
+
+          Line 20: Break out of the switch statement.
+
+        Line 21: This is the default case.
+
+          Line 22: Generate an error message about the delimiter being too 
+                   long. Also request a new input (and don't advance the cursor
+                   to the next line).
+
+      Line 23: End the switch
+
+    Line 24: End the loop from line 13
+
+    Line 25: set type = field
+
+    Line 26: Break out of the lines 7-32 loop.	
+
+  Line 27: This is very similar to line 11, but for the case of the -c flag.
+
+    Line 28: set type = column
+
+    Line 29: Break out of the lines 7-32 loop.	
+
+  Line 30: end the if-statement
+
+  Line 31: Display an error message that you enter either columns or fields or
+           quit. Do not advance the cursor.
+
+Line 32 End the loop started on line 7.  
+        At this point, we know the type and also the delimiter (if the type is
+        a -f).
+
+Line 33: Empty
+
+Line 34: Asks precisely one of the following two questions:
+         "Are the selected fields meant to be [C]ut or [K]ept? (c/k/q) : "
+         "Are the selected columns meant to be [C]ut or [K]ept? (c/k/q) : "
+
+         Hint: Remember lines 25 and 28.
+
+Line 35: Similar to line 8, but the "-" does not need to be put on the front.
+
+Lines 36-40: These lines ensure that the user did type c, k , or q.
+
+Line 36: For as long as the input was not matching to c, k, or q
+  Line 37: Similar to lines 9&10, but on one line because no "then" is needed. 
+  Line 38: Print an appropriate error message and don't advance the cursor.
+  Line 39: Identical to line 35.
+Line 40: end the loop from line 36.
+
+Line 41: This line checks to see if [C]ut was chosen. If so, then a "-C" (an
+         upper-case C) is inserted at the front of the argv array. 
+
+Line 42: Empty
+
+Lines 43-57: These lines read the ranges.
+
+Line 43: Begins an infinite loop
+
+  Line 44: Ask one these two questions (without advancing the cursor):
+           Please enter a field number or range of numbers: 
+           Please enter a column number or range of numbers: 
+
+  Line 45: Read keyboard input.
+
+  Line 46: Similar to line 37.
+
+  Lines 47-51:These lines test that the inputted range (from line 45) is valid.
+  Line 47: A while loop.
+           The conditional expression used is complicated.
+
+           First, it uses echo to get a keyboard input
+           Second, it uses some command to turn every "-" into a " ".
+           Third, it passes that into seq as arguments
+                  At this point, seq generate some kind of output. Consider:
+                     If the original input was "3-5" then the inputs to seq
+                        would be "3" and "5" and the output of seq would be
+                        three lines saying "3", "4", and "5"
+                     If the original input was "3-3" then the inputs to seq
+                        would be "3" and "3" and the output of seq would be
+                        one line saying "3"
+                     If the original input was "3" then the input to seq
+                        would be "3" and the output of seq would be
+                        three lines saying "1", "2", and "3"
+                     If the original input was "5-3" then the inputs to seq
+                        would be "5" and "3" and the output of seq would be
+                        nothing. (But it would return success)
+                     If the original input was garbage, like "abc" the seq  
+                        would produce an error message. (And return an
+                        error code).
+                  Note that both of these last two cases are invalid ranges for
+                  cut. But only the second one gives an error code. So our
+                  work will be harder than testing $?. Instead we will want to 
+                  know if seq printed anything (and we will want to hide the 
+                  errors).
+
+                  So, what do the first 3 cases have in common, that the last
+                  two don't? They all print at least one digit.
+                  In contrast, the 4th case prints nothing and the prints an
+                  error message, but no digits.
+
+                  We define "printing anything" as producing some numbers in
+                  the output (as opposed to error messages).
+
+                  Side note: If this was sh (like homework 1 was), then we 
+                             could use the "2>" operator to redirect the error
+                             messages to /dev/null.  In that case, it would
+                             be easier to differentiate cases 4 and 5 from the
+                             others: they print nothing.
+                            
+                             But, since csh doesn't have the 2> operator, we
+                             have to do something else.  We will use the "|&"
+                             operator. You have not seen this operator before,
+                             but it is quite analogous to the ">&" operator.
+                             Just as ">&" redirects both stdout and stderr to a
+                             file, so also "|&" pipes both stdout and stderr to
+                             the next command.
+           Fourth, After the "|&" comes a tr command whose purpose is to remove
+                   everything but digits.
+           Fifth, use wc to get the number of characters
+           Sixth, wrap all of the above inside of a `` pair
+           Seventh, compare the result against 0. The meaning is, keep looping
+                    until a valid range is given (i.e., until seq prints some 
+                    digits).
+    Line 48: Print an error message and don't advance the cursor.
+    Line 49: Same as line 45.
+    Line 50: Similar to line 37.
+  Line 51: End the if-clause started on line 47.
+
+  Line 52: Append the inputted range (from either lines 45 or 49) to the end
+           of the argv array. In this case, be careful NOT to insert a space
+           in front when appending.
+
+  Line 53: Ask the appropriate one of the following (don't advance the cursor):
+           Do you want to add more fields? (Y/N): 
+           Do you want to add more columns? (Y/N): 
+           
+  Line 54: Read a keyboard input
+
+  Line 55: If the keyboard input began with anything other than a "y" or a "Y"
+           then break out of the loop from lines 43-57.
+ 
+           Note: this must use "!~" not "[^...]" because the [^...] operator
+           does not work in if-conditionals (see slide 45 of Lecture 5).
+           Also note: the "[...]" and "*" operators do work, in this case.
+
+  Line 56: Append a comma to the end of the argv array. Be careful NOT to 
+           insert a space in front when appending.
+
+Line 57: Ends the loop begun on line 43.
+
+Line 58: Empty
+
+Lines 59-64: These lines read the filename.
+
+Line 59: Begins an infinite loop.
+  Line 60: Asks for a filename.
+  Line 61: Reads keyboard input
+  Line 62: Tests for the existence of the indicated file (see slide 47 of 
+           Lecture 5).
+           If the file does exist, then break out of the lines 59-64 loop.
+  Line 63: Print a relevant error message.
+Line 64: End the loop from line 59.
+
+Line 65: Append the inputted filename to the end of the argv array. In this 
+         case, you DO want to insert a space first.
+
+Line 66: Ends the if-block that was begun on line 3.
+
+Line 67: Empty
+
+Line 68: Loop through all arguments. the loop index variable is an integer that
+         goes from 1 up to $#.
+  Line 69: If the current argument is the flag "-C" then replace it with
+           "--complement"
+  Line 70: If the current argument begins with "-o" (Note: this line ends with
+                                                     a "\" symbol -- see slide
+						     68 of Lecture 5.)
+    Line 71: Then replace this argument with "--output-delimiter=" concatenated
+             with the stuff that comes after the "-o".
+             Now how to get that "stuff"? The answer is in 4 parts:
+	      1. Put the value of this argument into the pipe
+	      2. Use tr to remove all "-" and "o" symbols from it (see lines
+	         325-343 of sampleruns.)
+	      3. Wrap the above inside of a `` pair.
+	      4. Use set to replace the argument, while simultaneously adding
+	         "--output-delimiter=" to the front.
+
+Line 72: End the loop begun on line 68.
+
+Line 73: Empty
+
+Line 74: set echo
+
+Line 75: Invoke the cut command, remembering to:
+         - Pass in all of the arguments
+	 - Use ":q"
+
+         Note: because this is the last line in the script, the exit status
+	 of your script will be the exit status of tr. (Unless you had typed
+	 "Q" at some point -- in that case the exit condition would be
+	 "success").

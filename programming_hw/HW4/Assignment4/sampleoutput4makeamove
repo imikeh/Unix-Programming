@@ -1,0 +1,63 @@
+% cat sampleinputformakeamove
+aXO
+XOf
+XhO
+% ./testmakeamove X 1
+
+WIN DETECTED
+X X O
+|
+X O f
+|
+X h O
+
+% ./testmakeamove x 1
+
+x X O
+
+X O f
+
+X h O
+
+% ./testmakeamove O 1
+
+WIN DETECTED
+O X O
+ \
+X O f
+   \
+X h O
+
+% ./testmakeamove X 2
+
+a X O
+
+X O X
+
+X h O
+
+% ./testmakeamove O 2
+
+WIN DETECTED
+a X O
+    |
+X O O
+    |
+X h O
+
+% ./testmakeamove X 3
+
+a X O
+
+X O f
+
+X X O
+
+% ./testmakeamove O 3
+
+a X O
+
+X O f
+
+X O O
+

@@ -1,0 +1,1188 @@
+#####################################################################
+# To begin, let's try a playthrough where the user makes a mistake: #
+#####################################################################
+
+% ./tictactoe
+Which symbol are you? (x/o) x
+Do you want to go first? (y/n) n
+
+
+The computer moves:
+a b O
+
+d e f
+
+g h i
+
+What is your move? (a-i) e
+
+
+Your move:
+a b O
+
+d X f
+
+g h i
+
+
+
+The computer moves:
+a b O
+
+d X f
+
+g O i
+
+What is your move? (a-i) i
+
+
+Your move:
+a b O
+
+d X f
+
+g O X
+
+
+
+The computer moves:
+O b O
+
+d X f
+
+g O X
+
+What is your move? (a-i) f
+
+
+Your move:
+O b O
+
+d X X
+
+g O X
+
+
+
+The computer wins:
+O-O-O
+
+d X X
+
+g O X
+
+
+#############################################################################
+# Notice that the computer never makes a mistake. See also that the winning #
+# row is indicated with "-" symbols.                                        # 
+#############################################################################
+
+
+
+###############################################################################
+# Now we'll do a series of runs where the computer goes first and always      #
+# chooses the upper-right corner.                                             #
+# To begin, in the following two games, the user's first move is to take      #
+# the center. What you will want to notice is that the computer's second is   #
+# different in these two runs: bottom-middle in the first run, but top-middle #
+# in the secind run.                                                          #
+# In other words, the same input (i.e., the same first two moves) has         #
+# produced a different output (i.e., a different position for the computer's  #
+# second move). And what this difference means is that the random aspect of   #
+# the AI is working correctly. (Randomness is used only when more than one    #
+# choice is equally good. In this case, both the top-middle and bottom-middle #
+# were, indeed, equally good: each results in a tie, and no other move option #
+# exists that would have guaranteed a win.                                    #
+###############################################################################
+
+% ./tictactoe
+Which symbol are you? (x/o) x
+Do you want to go first? (y/n) no
+
+
+The computer moves:
+a b O
+
+d e f
+
+g h i
+
+What is your move? (a-i) e
+
+
+Your move:
+a b O
+
+d X f
+
+g h i
+
+
+
+The computer moves:
+a b O
+
+d X f
+
+g O i
+
+What is your move? (a-i) i
+
+
+Your move:
+a b O
+
+d X f
+
+g O X
+
+
+
+The computer moves:
+O b O
+
+d X f
+
+g O X
+
+What is your move? (a-i) b
+
+
+Your move:
+O X O
+
+d X f
+
+g O X
+
+
+
+The computer moves:
+O X O
+
+d X f
+
+O O X
+
+What is your move? (a-i) d
+
+
+Its a tie:
+O X O
+
+X X f
+
+O O X
+
+% ./tictactoe
+Which symbol are you? (x/o) x
+Do you want to go first? (y/n) NO
+
+
+The computer moves:
+a b O
+
+d e f
+
+g h i
+
+What is your move? (a-i) e
+
+
+Your move:
+a b O
+
+d X f
+
+g h i
+
+
+
+The computer moves:
+a O O
+
+d X f
+
+g h i
+
+What is your move? (a-i) a
+
+
+Your move:
+X O O
+
+d X f
+
+g h i
+
+
+
+The computer moves:
+X O O
+
+d X f
+
+g h O
+
+What is your move? (a-i) f
+
+
+Your move:
+X O O
+
+d X X
+
+g h O
+
+
+
+The computer moves:
+X O O
+
+O X X
+
+g h O
+
+What is your move? (a-i) g
+
+
+Its a tie:
+X O O
+
+O X X
+
+X h O
+
+###############################################################################
+# We've just looked at the case where the computer goes first and chooses the #
+# upper-right corner, then the user chooses the center.                       #
+# Let's now see what happens when we change the second move (i.e., when the   #
+# use goes somewhere other than the center). What we find is that the user    #
+# loses in every case.                                                        #
+###############################################################################
+
+% ./tictactoe
+Which symbol are you? (x/o) o
+Do you want to go first? (y/n) nope
+
+
+The computer moves:
+a b X
+
+d e f
+
+g h i
+
+What is your move? (a-i) b
+
+
+Your move:
+a O X
+
+d e f
+
+g h i
+
+
+
+The computer moves:
+a O X
+
+d e X
+
+g h i
+
+What is your move? (a-i) i
+
+
+Your move:
+a O X
+
+d e X
+
+g h O
+
+
+
+The computer moves:
+a O X
+
+d X X
+
+g h O
+
+What is your move? (a-i) d
+
+
+Your move:
+a O X
+
+O X X
+
+g h O
+
+
+
+The computer wins:
+a O X
+   /
+O X X
+ /
+X h O
+
+
+
+% ./tictactoe
+Which symbol are you? (x/o) o
+Do you want to go first? (y/n) netflix
+
+
+The computer moves:
+a b X
+
+d e f
+
+g h i
+
+What is your move? (a-i) d
+
+
+Your move:
+a b X
+
+O e f
+
+g h i
+
+
+
+The computer moves:
+X b X
+
+O e f
+
+g h i
+
+What is your move? (a-i) b
+
+
+Your move:
+X O X
+
+O e f
+
+g h i
+
+
+
+The computer moves:
+X O X
+
+O e f
+
+g h X
+
+What is your move? (a-i) f
+
+
+Your move:
+X O X
+
+O e O
+
+g h X
+
+
+
+The computer wins:
+X O X
+ \
+O X O
+   \
+g h X
+
+
+
+% ./tictactoe
+Which symbol are you? (x/o) x
+Do you want to go first? (y/n) n
+
+
+The computer moves:
+a b O
+
+d e f
+
+g h i
+
+What is your move? (a-i) a
+
+
+Your move:
+X b O
+
+d e f
+
+g h i
+
+
+
+The computer moves:
+X b O
+
+d e O
+
+g h i
+
+What is your move? (a-i) i
+
+
+Your move:
+X b O
+
+d e O
+
+g h X
+
+
+
+The computer moves:
+X b O
+
+d O O
+
+g h X
+
+What is your move? (a-i) g
+
+
+Your move:
+X b O
+
+d O O
+
+X h X
+
+
+
+The computer wins:
+X b O
+
+O-O-O
+
+X h X
+
+
+
+% ./tictactoe
+Which symbol are you? (x/o) x
+Do you want to go first? (y/n) n
+
+
+The computer moves:
+a b O
+
+d e f
+
+g h i
+
+What is your move? (a-i) g
+
+
+Your move:
+a b O
+
+d e f
+
+X h i
+
+
+
+The computer moves:
+O b O
+
+d e f
+
+X h i
+
+What is your move? (a-i) b
+
+
+Your move:
+O X O
+
+d e f
+
+X h i
+
+
+
+The computer moves:
+O X O
+
+d e f
+
+X h O
+
+What is your move? (a-i) e
+
+
+Your move:
+O X O
+
+d X f
+
+X h O
+
+
+
+The computer wins:
+O X O
+    |
+d X O
+    |
+X h O
+
+
+############################################################################
+# Let's now look at some cases where the computer goes first and takes the #
+# center.                                                                  #
+############################################################################
+
+% ./tictactoe
+Which symbol are you? (x/o) x
+Do you want to go first? (y/n) n
+
+
+The computer moves:
+a b c
+
+d O f
+
+g h i
+
+What is your move? (a-i) b
+
+
+Your move:
+a X c
+
+d O f
+
+g h i
+
+
+
+The computer moves:
+a X c
+
+d O f
+
+g h O
+
+What is your move? (a-i) a
+
+
+Your move:
+X X c
+
+d O f
+
+g h O
+
+
+
+The computer moves:
+X X O
+
+d O f
+
+g h O
+
+What is your move? (a-i) f
+
+
+Your move:
+X X O
+
+d O X
+
+g h O
+
+
+
+The computer wins:
+X X O
+   /
+d O X
+ /
+O h O
+
+
+
+% ./tictactoe
+Which symbol are you? (x/o) x
+Do you want to go first? (y/n) n
+
+
+The computer moves:
+a b c
+
+d O f
+
+g h i
+
+What is your move? (a-i) g
+
+
+Your move:
+a b c
+
+d O f
+
+X h i
+
+
+
+The computer moves:
+a b c
+
+d O f
+
+X h O
+
+What is your move? (a-i) a
+
+
+Your move:
+X b c
+
+d O f
+
+X h O
+
+
+
+The computer moves:
+X b c
+
+O O f
+
+X h O
+
+What is your move? (a-i) f
+
+
+Your move:
+X b c
+
+O O X
+
+X h O
+
+
+
+The computer moves:
+X b O
+
+O O X
+
+X h O
+
+What is your move? (a-i) b
+
+
+Your move:
+X X O
+
+O O X
+
+X h O
+
+
+
+It is a tie:
+X X O
+
+O O X
+
+X O O
+
+
+###############################################################################
+# We won't look at the case of where the computer goes first and takes a side,#
+# because the computer never will choose to do that. It is a bad choice for   #
+# the first move.                                                             #
+#############################################################################
+
+
+
+###############################################################################
+# Now we'll try some where the user goes first:                               #
+###############################################################################
+% ./tictactoe
+Which symbol are you? (x/o) c
+Sorry. You must enter a valid choice (x/o): X
+Do you want to go first? (y/n) tes
+Sorry. You must enter a valid choice (y/n): yes
+a b c
+
+d e f
+
+g h i
+
+What is your move? (a-i) G
+Sorry. You must enter a valid choice (a-i): Q
+Sorry. You must enter a valid choice (a-i): gg
+Sorry. You must enter a valid choice (a-i): g
+
+
+Your move:
+a b c
+
+d e f
+
+X h i
+
+
+The computer moves:
+a b c
+
+d O f
+
+X h i
+
+
+What is your move? (a-i) c
+
+
+Your move:
+a b X
+
+d O f
+
+X h i
+
+
+
+The computer moves:
+a b X
+
+d O O
+
+X h i
+
+
+What is your move? (a-i) d
+
+
+Your move:
+a b X
+
+X O O
+
+X h i
+
+
+
+The computer moves:
+O b X
+
+X O O
+
+X h i
+
+
+What is your move? (a-i) i
+
+
+Your move:
+O b X
+
+X O O
+
+X h X
+
+
+
+The computer moves:
+O b X
+
+X O O
+
+X O X
+
+
+What is your move? (a-i) b
+
+
+Its a tie:
+O X X
+
+X O O
+
+X O X
+
+% ./tictactoe
+Which symbol are you? (x/o) x
+Do you want to go first? (y/n) yep
+a b c
+
+d e f
+
+g h i
+
+What is your move? (a-i) g
+
+
+Your move:
+a b c
+
+d e f
+
+X h i
+
+
+The computer moves:
+a b c
+
+d O f
+
+X h i
+
+
+What is your move? (a-i) c
+
+
+Your move:
+a b X
+
+d O f
+
+X h i
+
+
+
+The computer moves:
+a b X
+
+O O f
+
+X h i
+
+
+What is your move? (a-i) f
+
+
+Your move:
+a b X
+
+O O X
+
+X h i
+
+
+
+The computer moves:
+a b X
+
+O O X
+
+X h O
+
+
+What is your move? (a-i) a
+
+
+Your move:
+X b X
+
+O O X
+
+X h O
+
+
+
+The computer moves:
+X O X
+
+O O X
+
+X h O
+
+
+What is your move? (a-i) h
+
+
+Its a tie:
+X O X
+
+O O X
+
+X X O
+
+% ./tictactoe
+Which symbol are you? (x/o) x
+Do you want to go first? (y/n) yeah
+a b c
+
+d e f
+
+g h i
+
+What is your move? (a-i) h
+
+
+Your move:
+a b c
+
+d e f
+
+g X i
+
+
+The computer moves:
+a b c
+
+d e f
+
+O X i
+
+
+What is your move? (a-i) i
+
+
+Your move:
+a b c
+
+d e f
+
+O X X
+
+
+
+The computer moves:
+a b c
+
+O e f
+
+O X X
+
+
+What is your move? (a-i) f
+
+
+Your move:
+a b c
+
+O e X
+
+O X X
+
+
+
+The computer wins:
+O b c
+|
+O e X
+|
+O X X
+
+
+
+% ./tictactoe
+Which symbol are you? (x/o) x
+Do you want to go first? (y/n) yep
+a b c
+
+d e f
+
+g h i
+
+What is your move? (a-i) f
+
+
+Your move:
+a b c
+
+d e X
+
+g h i
+
+
+The computer moves:
+a b O
+
+d e X
+
+g h i
+
+
+What is your move? (a-i) a
+
+
+Your move:
+X b O
+
+d e X
+
+g h i
+
+
+
+The computer moves:
+X b O
+
+d O X
+
+g h i
+
+
+What is your move? (a-i) g
+
+
+Your move:
+X b O
+
+d O X
+
+X h i
+
+
+
+The computer moves:
+X b O
+
+O O X
+
+X h i
+
+
+What is your move? (a-i) h
+
+
+Your move:
+X b O
+
+O O X
+
+X X i
+
+
+
+The computer moves:
+X b O
+
+O O X
+
+X X O
+
+
+What is your move? (a-i) b
+
+
+Its a tie:
+X X O
+
+O O X
+
+X X O
+
+% ./tictactoe
+Which symbol are you? (x/o) x
+Do you want to go first? (y/n) y
+a b c
+
+d e f
+
+g h i
+
+What is your move? (a-i) e
+
+
+Your move:
+a b c
+
+d X f
+
+g h i
+
+
+The computer moves:
+a b c
+
+d X f
+
+O h i
+
+
+What is your move? (a-i) c
+
+
+Your move:
+a b X
+
+d X f
+
+O h i
+
+
+
+The computer moves:
+O b X
+
+d X f
+
+O h i
+
+
+What is your move? (a-i) d
+
+
+Your move:
+O b X
+
+X X f
+
+O h i
+
+
+
+The computer moves:
+O b X
+
+X X O
+
+O h i
+
+
+What is your move? (a-i) h
+
+
+Your move:
+O b X
+
+X X O
+
+O X i
+
+
+
+The computer moves:
+O O X
+
+X X O
+
+O X i
+
+
+What is your move? (a-i) i
+
+
+Its a tie:
+O O X
+
+X X O
+
+O X X
+

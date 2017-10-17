@@ -1,0 +1,23 @@
+#!/usr/bin/tcsh
+echo -n "Which symbol are you? (x/o) "
+while ( 1 )
+	set input = $<:q
+	if ( $input:q =~ [0OXox] ) break
+	echo -n "Sorry. You must enter a valid choice (x/o): "
+end
+echo -n "Do you want to go first? (y/n) "
+while ( 1 )
+	set input2 = $<:q
+	if ( $input2:q =~ [YNyn]*  ) break
+	echo -n "Sorry. You must enter a valid choice (y/n): "
+end
+
+if ( $input2:q =~ [Nn]* ) then
+	echo 'abc\ndef\nghi' > beforemove
+	if ( $input:q =~ [Xx] ) ./trymoves O 1 1
+	if ( $input:q =~ [Oo0] ) ./trymoves X 1 1
+else
+	echo 'a b c\n\nd e f\n\ng h i' > aftermove
+	if ( $input:q =~ [Xx] ) ./yourmove X
+	if ( $input:q =~ [Oo0] ) ./yourmove O
+endif

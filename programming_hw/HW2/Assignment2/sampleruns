@@ -1,0 +1,488 @@
+Let's look at the contents of the testfile:
+
+% cat testfile
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+a	b	c	d	e	f	g	h	i	j
+l	m	n	o	p	q	r	s	t	u
+
+
+Now, notice that this file has 6 lines and that the 4th and 5th lines are tab-
+separated. (Thus, those lines have fewer characters even though they look wider
+when displayed as above.)
+
+Let' try some different arguments and see what the outputs are:
+
+% ./cut -c2-3 testfile
+cut -c2-3 testfile
+bc
+BC
+ b
+,B
+	b
+	m
+
+In the above example, there is no visible difference to the regular "cut"
+command. We have asked to see the 2nd and 3rd columns. And that is what it did.
+
+Notice: The first output line "cut -c2-3 testfile" is a debug output. It
+displays the actual arguments passed to the cut command.
+
+Also notice: The 6th and 7th lines contain only two characters, just like lines
+2-5. The reason that they LOOK wider is that the 2nd column (of lines 5 and 6
+of testfile) is the tab character.
+
+Now let's try another example. This time with something that is not the same
+as for standard cut:
+
+% ./cut -c2-3 -o/ testfile
+cut -c2-3 --output-delimiter=/ testfile
+bc
+BC
+ b
+,B
+	b
+	m
+
+Notice that the first output line "cut -c2-3 --output-delimiter=/ testfile"
+is different from what we had typed. We typed "-o/" but it became a longer
+argument.
+
+Notice also that the output did not change. The reason is that no output
+delimiters were actually printed.
+
+Now, let's think about ranges:
+
+% ./cut -c2-3,1,4-5 testfile
+cut -c2-3,1,4-5 testfile
+abcde
+ABCDE
+a b c
+A,B,C
+a	b	c
+l	m	n
+
+The range used here was 2-3 and 1 and 4-5.
+Note: Multiple ranges can be specified -- but they must be separated by commas
+      without spaces. (This is not my rule, it is inherent to the cut command.)
+Note: The multiple entries do not have to all be ranges. In the above example,
+      the 2nd entry was the single number "1". 
+Note: The multiple entries do not have to be in order. In the above example,
+      the 2nd entry ("1") was a smaller number than the first entry ("2-3"),
+      but the output was still correct (columns 1-5 printed, in their original
+      order).
+Note: The individual ranges do have to be in order, however. If, for example,
+      the first entry had been "3-2", then that would be and error.
+Note: All of the above rules are inherent to the cut command. I did not invent
+      them. This means that:
+      1. These rules generally work correctly without you doing anything.
+      2. If you wonder how some other kind of range (eg, going to more columns
+         than a line in the files has, or double listing a column in two
+	 ranges, etc.) then you can just provide that input to the normal cut
+	 command and you will see what the output should be.
+
+Now, let's look at a case where the output delimiter is used:
+
+% ./cut -c2-3,1,4-5 -o/ testfile
+cut -c2-3,1,4-5 --output-delimiter=/ testfile
+a/bc/de
+A/BC/DE
+a/ b/ c
+A/,B/,C
+a/	b/	c
+l/	m/	n
+
+Notice here that the only difference with the previous example is that the
+output delimiter was changed. And see that the output is affected. Three ranges
+were used: 1,2-3,4-5. Thus, separators were placed after the 1st and the 3rd
+columns (not after the 5th, because it doesn't have to be separated, nothing
+comes after it).
+
+This output difference is because the ranges were divided. The same columns
+could have been chosen in one range and the output would not have used
+separators:
+% ./cut -c1-5 -o/ testfile
+cut -c1-5 --output-delimiter=/ testfile
+abcde
+ABCDE
+a b c
+A,B,C
+a	b	c
+l	m	n
+
+See the difference in the output? Again, this is a behavior that is inherent
+to the "Cut" command, so it does not require you to do anything to make it
+work this way.
+
+Now let's think about some examples with fields:
+
+% ./cut -f1 testfile
+cut -f1 testfile
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+a
+l
+
+Notice that this has displayed the first field in each line. The default field
+delimiter is the tab. Therefore:
+  1. The first 4 lines of testfile only have one field each (because they don't
+     contain tabs). So the whole line prints when you just ask for 1 field.
+  2. The 5th and 6th lines are tab-separated. So there are many fields on these
+     lines and only the first field is printed ("a" for line 5, and "l" for
+     line 6).
+
+Let's look at the second field, now:
+
+% ./cut -f2 testfile
+cut -f2 testfile
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+b
+m
+
+Note: The last two output lines correctly print just the second field ("b" in
+      one case, "m" in the other).
+Note: The first four lines of testfile are reprinted verbatim -- even though
+      these lines didn't have a second field. Logically, we would expect to
+      not see any output from these lines. Well, we're making a better version
+      of cut -- not a perfect one. I wish that cut would do the logical thing
+      here, but it doesn't. And since this is an inherent issue of cut, we
+      won't be changing it. (Again, as for so many other things discussed here,
+      we don't actually have to do anything to achieve this illogical effect,
+      it happens automatically when our script invokes cut.)
+
+Now let's look at two fields:
+
+% ./cut -f2,3 testfile
+cut -f2,3 testfile
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+b	c
+m	n
+% ./cut -f2-3 testfile
+cut -f2-3 testfile
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+b	c
+m	n
+
+
+Notice that the two commands were the same. Fields 2 and 3 is the same as
+fields 2 to 3. But what about the output delimiter:
+
+% ./cut -f2-3 -o: testfile
+cut -f2-3 --output-delimiter=: testfile
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+b:c
+m:n
+
+Notice that the output delimiter is placed between the fields, even though 2-3
+was 1 range (if it had been -c2-3 then no output delimiter would have appeared,
+but if it had been -c2,3 the delimiter would appear -- this is just the
+inherent difference in how cut processes columns versus fields).
+
+Let's think more about the delimiter:
+
+% ./cut -f2-3 -o::: testfile
+cut -f2-3 --output-delimiter=::: testfile
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+b:::c
+m:::n
+% ./cut -f2-3 -o123 testfile
+cut -f2-3 --output-delimiter=123 testfile
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+b123c
+m123n
+
+Notice that the output delimiter is a string, not necessarily a single
+character.
+
+Let's look at the behavior of complement:
+
+% ./cut -c2-3,1,4-5 -C testfile
+cut -c2-3,1,4-5 --complement testfile
+fghijklmnopqrstuvwxyz
+FGHIJKLMNOPQRSTUVWXYZ
+ d e f g h i j k l m n o p q r s t u v w x y z
+,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+	d	e	f	g	h	i	j
+	o	p	q	r	s	t	u
+
+
+Notice that the upper-case-C has been converted to "--complement"
+Notice the first five fields have been removed.
+
+Now, let's compare another set of ranges, with and without, complimenting:
+% ./cut -c2-3,5-7 -o/ testfile
+cut -c2-3,5-7 --output-delimiter=/ testfile
+bc/efg
+BC/EFG
+ b/c d
+,B/C,D
+	b/c	d
+	m/n	o
+% ./cut -c2-3,5-7 -o/ -C testfile
+cut -c2-3,5-7 --output-delimiter=/ --complement testfile
+a/d/hijklmnopqrstuvwxyz
+A/D/HIJKLMNOPQRSTUVWXYZ
+a/ / e f g h i j k l m n o p q r s t u v w x y z
+A/,/,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+a/	/	e	f	g	h	i	j	
+l/	/	p	q	r	s	t	u
+
+In the first example, things are not much different that earlier examples: two
+ranges were specified, so their is an output separator between them.
+In the second example, the displayed ranges are 1,4,8-end. This means that we
+see two output delimiters on each line.
+
+Now, let's try changing the input delimiter (which only makes sense with -f):
+
+% ./cut -f1 -d, testfile
+cut -f1 -d,
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A
+a	b	c	d	e	f	g	h	i	j
+l	m	n	o	p	q	r	s	t	u
+% ./cut -f1 -d, -C testfile
+cut -f1 -d, --complement testfile
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+a	b	c	d	e	f	g	h	i	j
+l	m	n	o	p	q	r	s	t	u
+
+Only the 4th line of testfile is comma-separated. So only this line has more
+than one field. In boh cases above, that line displayed the requested fields
+(field 1 in the first case, fields 2-end in the second case).
+
+The space is a bit special in its behavior:
+
+% ./cut -f1 -d" " testfile
+cut -f1 -d 
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+a	b	c	d	e	f	g	h	i	j
+l	m	n	o	p	q	r	s	t	u
+
+The output produced by the 6 lines of the testfile are exactly as we would
+expect. Only the third line of test file is space-separated. And only it
+displays a single character. Everything worked fine.
+
+But: The space character requires the quote symbols arround it. This is true
+     not just for your version of cut, but also for the original version.
+But: The first output line, "cut -f1 -d " does not obviously show the space
+     symbol, but it is there (i.e., the line has a space after the d and before
+     the \n.)
+But: The last two statements seem to contradict: the original cut needs quotes
+     and the display of the executed cut command does not show quotes. And yet
+     we have also just declared that it did work correctly. So what is going
+     on? Answer: cut is receiving the properly quoted space, but the display
+     of the command is not indicating it properly. Should we be concerned? No,
+     because the display of the command is just for debug purposes.
+
+Here are some more examples:
+
+% ./cut -c2-5,6-7,25-26 -o___ testfile
+cut -c2-5,6-7,25-26 --output-delimiter=___ testfile
+bcde___fg___yz
+BCDE___FG___YZ
+ b c___ d___m 
+,B,C___,D___M,
+	b	c___	d
+	m	n___	o
+% ./cut -c2-5,6-7,25-26 -o_ testfile
+cut -c2-5,6-7,25-26 --output-delimiter=_ testfile
+bcde_fg_yz
+BCDE_FG_YZ
+ b c_ d_m 
+,B,C_,D_M,
+	b	c_	d
+	m	n_	o
+% ./cut -c2-5,6-7,25-26 -ooutput-separator testfile
+cut -c2-5,6-7,25-26 --output-delimiter=utputseparatr testfile
+bcdeutputseparatrfgutputseparatryz
+BCDEutputseparatrFGutputseparatrYZ
+ b cutputseparatr dutputseparatrm 
+,B,Cutputseparatr,DutputseparatrM,
+	b	cutputseparatr	d
+	m	nutputseparatr	o
+
+Notice the last example. The requested output delimiter was "output-separator",
+but the second line shows that the delimiter passed to the actual cut command
+was "utputseparatr". No wonder, then, that the actual output lines use this
+utputseparatr" string to separate strings.
+
+What this demonstrates is a quirk in our script: the "-" and "o" symbols cannot
+be used as part of the output-delimiter string. This is because of the way we
+use the tr command on line 71 of the script. This unfortunate feature is just 
+something we live with. We would need to know more UNIX commands if we wanted
+to avoid it (and we will learn the proper command, just not yet).
+
+Note, you are also allowed to put a space before some things:
+
+% ./cut -f 1 -d " " testfile
+cut -f 1 -d  
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+a	b	c	d	e	f	g	h	i	j
+l	m	n	o	p	q	r	s	t	u
+
+
+And note that you are allowed to pipe in the input rather than taking it from
+a file:
+
+% cat testfile | ./cut -f 1 -d " "
+cut -f 1 -d  
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+a	b	c	d	e	f	g	h	i	j
+l	m	n	o	p	q	r	s	t	u
+% ./cut -f 1 -d " " < testfile
+cut -f 1 -d  
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+a	b	c	d	e	f	g	h	i	j
+l	m	n	o	p	q	r	s	t	u
+
+
+Now, we have learned all we need about how our version of cut works with
+command-line arguments.
+
+But there is another aspect to our cut command, interactive mode:
+
+% ./cut
+Cut program -- interactive mode
+
+Do you want to select [C]olumns or [F]ields? (f/c/q) : c
+Are the selected columns meant to be [C]ut or [K]ept? (c/k/q) : k
+Please enter a column number or range of numbers: 4
+Do you want to add more columns? (Y/N): Yes
+Please enter a column number or range of numbers: 5-6
+Do you want to add more columns? (Y/N): YES
+Please enter a column number or range of numbers: 7-6
+Invalid range. Please enter a valid range (or else [Q]uit) : 9
+Do you want to add more columns? (Y/N): no
+Please enter the file name : testfile
+cut -c4,5-6,9 testfile
+defi
+DEFI
+ c e
+,C,E
+	c	e
+	n	p
+
+
+Notice that the interactive mode:
+  - Is chosen when you run ./cut with no arguments.
+  - Is not case sensitive.
+  - Asks only relevant questions. For instance, in the example above, we chose 
+    [C]olumns -- so the program never asked us for an input delimiter
+  - Cannot receive a piped-in file to process, because the keyboard input is
+    needed to receive answers to the above questions.
+  - Does not allow for changing the output delimiter. (Just  because I thought
+    the program was long enough without adding even more code for this.)
+  - Handles ranges differently that the non-interactive mode:
+    1. It accepts only one at a time, rather than separating them with commas.
+    2. It immediately checks them for validity (rather than just running the 
+       cut command and letting it crash -- which is what would happen in non-
+       interactive mode if you provided an invalid range, such as the 7-6 tried
+       above).
+    3. It requires fully described ranges (either a number or two numbers
+       separated by a hyphen). In contrast, non-interactive mode allows some
+       additional range specifications, because it passes them on to the cut
+       command: -N meaning up to N, and N- meaning from N to the end of the 
+       line.
+
+Here is another example, this time with fields:
+
+% ./cut
+Cut program -- interactive mode
+
+Do you want to select [C]olumns or [F]ields? (f/c/q) : f
+Please enter the delimiter (default = tab) : 
+Are the selected fields meant to be [C]ut or [K]ept? (c/k/q) : k
+Please enter a field number or range of numbers: 1
+Do you want to add more fields? (Y/N): y
+Please enter a field number or range of numbers: 3
+Do you want to add more fields? (Y/N): n
+Please enter the file name : testfile
+cut -f1,3 testfile
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+a	c
+l	n
+
+Notice that no delimiter was provided by the user (we just hit enter). So the
+default delimiter was used (tab). Thus the executed cut command displays as 
+having no delimiter and the last two output lines are each showing just fields
+1 and 3.
+
+Here are some responses to unexpected input:
+
+% ./cut
+Cut program -- interactive mode
+
+Do you want to select [C]olumns or [F]ields? (f/c/q) : e
+You must choose either [C]olumns or [F]ields (or else quit) : q
+% ./cut
+Cut program -- interactive mode
+
+Do you want to select [C]olumns or [F]ields? (f/c/q) : Q
+
+Now consider this one:
+
+% ./cut
+Cut program -- interactive mode
+
+Do you want to select [C]olumns or [F]ields? (f/c/q) : f
+Please enter the delimiter (default = tab) : ,
+Are the selected fields meant to be [C]ut or [K]ept? (c/k/q) : c
+Please enter a field number or range of numbers: 3-4
+Do you want to add more fields? (Y/N): y
+Please enter a field number or range of numbers: 6-7
+Do you want to add more fields? (Y/N): n
+Please enter the file name : testfile
+cut --complement -d, -f3-4,6-7 testfile
+abcdefghijklmnopqrstuvwxyz
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A,B,E,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+a	b	c	d	e	f	g	h	i	j
+l	m	n	o	p	q	r	s	t	u
+
+Here we choose a comma for a delimiter.
+And we chose [C]ut rather than to [K]eep.
+See how these choices influence the cut command that finally gets executed
+(cut --complement -d, -f3-4,6-7 testfile).

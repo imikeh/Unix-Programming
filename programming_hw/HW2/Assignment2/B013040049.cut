@@ -1,0 +1,75 @@
+#!/usr/bin/tcsh
+#keepfighting
+if ( $# == 0 ) then
+echo "Cut program -- interactive mode"
+echo ""
+echo -n "Do you want to select [C]olumns or [F]ields? (f/c/q) : "
+while ( 1 )
+	set argv = `set a = $<:q ; echo "-$a" | tr 'A-Z' 'a-z'`
+	if ( $argv:q =~ -[qQ]* ) then
+		exit
+	else if ( $argv:q =~ -[f] ) then
+		echo -n "Please enter the delimiter (default = tab) : "				
+	    while ( $?X == 0 )
+			set var = $<:q
+			switch ( `echo "$var" | wc -c` )
+				case 2:
+					set argv = ( -d$var $argv:q )					
+				case 1:
+					set X = 1				
+					breaksw
+				default:
+					echo -n "error message , again ! Please enter the delimiter (default = tab) :  "		
+			endsw
+		end
+		set type = f
+		break
+	else if ( $argv:q =~ -[c] ) then
+		set type = c
+		break
+	endif
+	echo -n "error message , again ! Do you want to select [C]olumns or [F]ields? (f/c/q) : "
+end
+
+if ( $type:q =~ [f] ) echo -n "Are the selected fields meant to be [C]ut or [K]ept? (c/k/q) : "; if ( $type:q =~ [c] ) echo -n "Are the selected columns meant to be [C]ut or [K]ept? (c/k/q) : "
+set b = `set a = $<:q ; echo "$a" | tr 'A-Z' 'a-z'`
+while ( $b:q !~ [ck] )
+	if ( $b:q =~ [qQ]* ) exit
+	echo -n "error message , again ! "
+	set b = `set a = $<:q ; echo "$a" | tr 'A-Z' 'a-z'`
+end
+if ( $b:q =~ [c] ) set argv = ( -C $argv:q )
+
+while( 1 )
+	if ( $type:q =~ [f] ) echo -n "Please enter a field number or range of numbers: "; if ( $type:q =~ [c] ) echo -n "Please enter a column number or range of numbers: "
+	set c = $<:q
+	if ( $c:q =~ [qQ]* ) exit	
+	while ( ` echo $c:q | tr '-' ' ' | xargs seq |& tr -dc "0-9" | wc -w ` == 0 )
+		echo -n "error range , again ! "
+		set c = $<:q
+		if ( $c:q =~ [qQ]* ) exit
+	end
+	set argv = ( $argv:q$c )
+	if ( $type:q =~ [f] ) echo -n "Do you want to add more fields? (Y/N): "; if ( $type:q =~ [c] ) echo -n "Do you want to add more columns? (Y/N): "
+	set d = $<:q
+	if ( $d:q !~ [Yy]* ) break
+	set argv = ( $argv:q,)
+end
+
+while ( 1 )
+	echo -n "Please enter the file name : "
+	set name = $<:q
+	if ( -e $name ) break
+	echo  "error message , again ! "
+end
+set argv = ( $argv:q $name )
+endif
+
+foreach i ( `seq $#` )
+	if ( $argv[$i]:q =~ -[C] ) set argv[$i] = --complement
+	if ( $argv[$i]:q =~ -[o]* ) \
+		set argv[$i] = --output-delimiter=` echo $argv[$i] | tr -d '-' | tr -d 'o' `
+end
+
+set echo
+cut $argv:q

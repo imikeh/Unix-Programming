@@ -1,0 +1,7 @@
+#!/usr/bin/tcsh
+rm -f outtmp
+foreach x (`cat ins | wc -l | xargs seq`)
+  cat ins | sed $x\!d >> outtmp
+  cat ins | sed $x\!d | ./*.PA5 >> outtmp
+end
+cat outtmp | sed 's/$/...................................../;s/\(.\{37\}\).*/\1/;N;s/\n//'> outs

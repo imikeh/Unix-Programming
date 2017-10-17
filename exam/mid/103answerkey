@@ -1,0 +1,149 @@
+                             Midterm Answer Key
+
+Problems 1-83 are 1 pt each:
+
+1 D (50%:A,E)
+2 M
+  cat  d  dog  dpfile  due
+3 B
+4 L (50%:B)
+5 M
+  \"\'
+6 D (50%:A,E)
+7 M
+  cat
+8 M
+  c?t
+9 M
+  ___a b c?
+  wio? 5?
+10 B
+11 B
+12 B
+13 D (50%:A,E)
+14 D (50%:A,E)
+15 A
+16 D
+17 D
+18 B
+19 M
+   \
+20 D
+21 M
+   \
+22 G
+23 G
+24 D (50%:A,E)
+25 A
+26 G
+27 M
+   ___a b c?
+28 G (80%:E)
+29 M
+   __a b c?
+30 A
+31 A
+32 B
+33 M
+   6/2
+34 H 510203  (60%: H 10203)
+35 M
+   1 0 2 0 3?
+36 K
+37 K
+38 A  (40%: L)
+39 C
+40 M
+   mouse
+41 H 11
+42 M
+   $x
+43 H 1
+44 H 4
+45 G
+46 E (G)
+47 H 3
+48 L
+49 A
+50 L
+51 B
+52 M
+   -n $n
+53 G
+54 M
+   ___a b c?
+   wio? 5?
+   1 0 2 0 3?
+
+55 T 
+56 4
+57 1
+58 error caused by the "+" sign not being understood by set
+59 error caused by T not being an expression or number
+60 4
+61 1
+62 echo file1 file2 file2  (let me know if anyone also included argumenter)
+63 $A
+64 *
+65 *
+66 1
+67 0
+68 hello world
+69 0
+70 hello world
+   0
+71 Line 1: an error about "eco" not being a valid command name
+   Line 2: 1
+72 0
+73 5
+74 empty
+75 empty
+76 2
+77 4 5
+78 error that variable y does not exist
+79 1 (or some other number larger than zero)
+80 0
+81 0
+82 Four choices:
+    100% for:
+      Line 1: an error about variable y not existing
+      Line 2: 0
+    100% for:
+      Line 1: an error about illegal input to the set command
+      Line 2: 0
+    50% for:
+      Answered with either of the above error messages, but had no line 2
+    50% for:
+      0
+83 Two choices:
+    100% for:
+      Error message about either y not existing or about ilegal input to set
+    50% for:
+      if the answer indicates two error messages are generated
+
+
+In problems 84-90,
+
+And now here are the solutions to problems 84-90:
+84 echo 10 12 14 16 18 20                                       
+   seq 10 2 20 | sort -R | head -1  (or tail -1)
+
+
+85 tr \  \\n | tr -dc "a-zA-Z\n" | sort | uniq | grep . | wc -l 
+
+
+86 tr \\n \  | grep "stage and all"> /dev/null && echo "match found" 
+
+
+87 tr -dc A-Z | wc -c                                           
+
+88 grep -n \  | head -3 | tail -1 | cut -d: -f1                 
+
+
+89 Two options:                                                
+   tr -dc wW | wc -c | xargs expr 4 \<
+
+   tr -dc wW | wc -c | expr `cat` \> 4
+
+90 tr a-zA-Z n-za-mN-ZA-M | sort | tr a-zA-Z n-za-mN-ZA-M       
+

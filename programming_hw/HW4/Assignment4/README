@@ -1,0 +1,711 @@
+                          UNIX System Programming
+                         Programming Assignment #4
+                              "A Shell Game"
+
+Due: Friday, May 22  at  11:59 pm.
+
+Submission method: You will post to the course website.
+
+Submission rules: I REQUIRE you to FOLLOW THESE RULES:
+
+                  1. Submit one tar file.
+
+                  2. The name of the file will be "<your student ID>.PA4.tar"
+                     You will, of course, replace "<your student ID>" with
+                     your unique ID number (B9.... or M9....)
+		     When expanded, the tar file will create a directory named
+		     <your student ID>.PA4".
+                     The contents of the created directory will be four scripts
+                     with the following names:
+                     % ls -l <your student ID>.PA4/* | sed 's/.* //'
+                     <your student ID>.PA4/makemove
+                     <your student ID>.PA4/tictactoe
+                     <your student ID>.PA4/trymoves
+                     <your student ID>.PA4/yourmove
+
+                  3. Submissions made after the deadline will be ignored.
+                     (That means, no late submissions on this assignment.)
+                     (By the way, if you don't turn in your assignments, you
+                      will probably Fail The Class. That's a Fact. So start
+                      early and ask questions.)
+                  
+                  This is a large class. Unless each of you follows the above
+                  rules, the TAs' work becomes so hard. So I INSIST that you 
+                  FOLLOW the above rules. If you don't, we won't accept your 
+                  homework.
+
+                  If you have questions about these rules, you may post your 
+                  questions to the course website.
+
+
+Getting help:   - The Professor has office hours on Monday from 12:20-2:20, 
+                  and on Friday from 10:00-12:00, in room 9037.  He can also 
+                  be reached by email.
+                - The TAs are also available to answer your questions.
+                - Questions about the assignment can be posted to the 
+                  Discussion Forum.
+                - You may also discuss the ideas of the assignment with your
+                  classmates. Such discussion can be quite helpful to your 
+                  learning -- IF you ONLY talk about the concepts of the 
+                  assignment in the abstract. If, however, you discuss 
+                  specific implementation details of this assignment, then 
+                  you are not helping each others to learn; you are just 
+                  doing the work for them.
+		  And note: you may not share code. You CANNOT show another
+		  student ANY part of the answer to the assignment.
+
+Cheating policy:  If students are found to be sharing work, they will receive 
+                  a 0 for this course, or worse.
+                  It is cheating to let another student see your work, or to 
+                  let them look over your shoulder when your code is on the
+		  screen.
+                  We always look for evidence of cheating, so don't do it.
+                  (In any event, even if you do not get caught, a student who 
+                  copies the homework will not learn the material, so they 
+                  will fail the exam.)
+
+		  
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+*********************************
+* The Concept of the Assignment *
+*********************************
+You will use shell scripts to create a tic-tac-toe game. As you might be aware,
+a player can only lose at tic-tac-toe if they make a mistake. Two expert
+players will always tie. Therefore, your computer player can never lose.
+
+One of the features of this assignment is the use of scripts as you might use
+functions. In languages like C, a function can call other functions; it can
+even recursively call itself. In this assignment, you will find that this same
+behavior can be achieved in shell scripts. Furthermore, in languages like C, a
+function can receive parameters and can return a value. Similarly, C-shell
+scripts receive parameters through the argv array, and can return an answer
+through the exit command. When exit is used in this way, $? no longer indicates
+success or failure (and the && and || operators will be similarly affected).
+Furthermore, in languages like C, global values can be used to allow functions
+to access information without passing arguments or returning values. In C-shell
+scripts, the file system can be used like global variables, because all scripts
+can access these files. Moreover, unlike parameters and return values, the data
+stored in files is not limited to simple strings (what I mean is: a returned
+value must be an integer and parameters must be strings, but anything can go in
+a file).
+
+The most important part of a tic-tac-toe player is the artificial intelligence
+for determining the computer's moves. But there is, in fact, no intelligence in
+this AI. The choice of move is determined by simply trying all possible moves
+and choosing the one that comes out best. The algorithm is:
+1. The AI should choose a place that guarantees a win (either immediately or
+   later-on-but-inevitably).
+2. If option 1 is not possible, then the AI should choose a place that
+   guarantees that the computer won't lose (i.e., it guarantees a tie -- unless
+   the user were to later make a mistake, in which case a win could then be
+   achieved). Note, option 2 is never not possible, because a player who never
+   makes a mistake will never lose at tic-tac-toe.
+   
+We can implement the above algorithm with recursion:
+The AI is guaranteed to win:
+1. If the AI can choose a place that wins.
+2. Or if the AI can choose a place that guarantees that, regardless of where
+   the user chooses to go in response, the AI will be able to choose a next
+   place that wins.
+3. Or if the AI can choose a place that guarantees that, regardless of where
+   the user chooses to go in response, the AI will be able to choose a next
+   place that guarantees that, regardless of where the user next chooses to go
+   in response, the AI will be able to choose a place that wins.
+4. Or if the AI can choose a place that guarantees that, regardless of where
+   the user chooses to go in response, the AI will be able to choose a next
+   place that guarantees that, regardless of where the user next chooses to go
+   in response, the AI will be able to choose a place that guarantees that,
+   regardless of where the user next chooses to go in response, the AI will be
+   able to choose a place that wins.
+
+And the AI is guaranteed to not lose:
+1. If the AI can choose a place that obtains a tie (which is only possible if
+   there is only one place left).
+2. Or if the AI can choose a place that guarantees that, regardless of where
+   the user goes, the AI can choose a place that obtains a tie (which is only
+   possible if there are three places left).
+3. Or if the AI can choose a place that guarantees that, regardless of where
+   the user goes, the AI can choose a place that guarantees that, regardless of
+   where the user goes, the AI can choose a place that obtains a tie (which is
+   only possible if there are five places left).
+4. You get the idea. Here there are 7 places left.
+5. You get the idea. Here there are 9 places left.
+
+You see? These definitions are recursive:
+- At the top-level of recursion, you are always considering an AI move. If you
+  can't immediately win or tie, then you have to go recursive.
+- At EVEN recursion levels, you are considering user moves.
+  A win here means a loss for the AI. And that means that the recursive path to
+  here is a bad choice.
+  A loss here would mean a win for the computer. Such a loss would necessarily
+  happen at some lower level of recursion, because you never lose on your own
+  move (I mean: if you are playing as "X", then your move adds an X to the
+  board, and that X cannot immediately cause three O's to be in a row). But you
+  can't control what the user chooses; indeed a good player will avoid choosing
+  a position that leads to a loss. So a loss for the user doesn't happen just
+  because you find that there is a move that produces a loss. Instead, the user
+  loses when every position produces a loss.
+  Win or lose (or tie) the answer is passed up to the calling recursion level.
+- At ODD recursion levels greater than 1, you are considering future AI moves.
+  A win here (either an immediate win or a guaranteed future win) will indicate
+  a good path choice. But a loss here (defined, just as in the previous para-
+  graph, as every choice leading to a future loss) means it is a bad choice.
+  If neither, it is a tie. The answer is passed up to the calling level.
+  
+A final note about recursion: the more levels of recursion, the longer it takes
+to run. The first computer move is therefore the most time consuming. The first
+computer move has either 9 choices (if computer goes first) or 8 choices (if
+the user goes first). But, there is an optimization possible here, because the
+first computer move is easy to decide: if computer goes first, choose a corner
+or the center; if computer goes second, choose from a list of known proper
+countermoves to whichever place the user has moved. (On later moves, this would
+be harder to do, because the input conditions become more complex).
+
+Even after adding this optimization, you may find that your program is a little
+slow. On my Cygwin system takes 4 minutes for the computer to make its second
+move (later moves are faster). What this means is that you will want to test
+the individual commands and scripts separately before running everything (for
+the reason that smaller, faster tests will reveal their problems faster; if you
+have to wait 4 minutes to test each fix, then your debugging will go slower).
+
+******************
+* Provided Files *
+******************
+The directory containing this README file contains six additional files:
+% ls
+README                 sampleoutput4makeamove  sort-R.c       trymovestemplate
+sampleinput4makeamove  sampleruns              testmakeamove
+
+Here is what each of these files is for:
+sort-R.c: Most of you can ignore this file. But there may be a few students who
+          find that their system does not support the -R flag for sort. In that
+	  case, these students should run "gcc -o ~/sort-R sort-R.c". Next,
+	  these students should use "~/sort-R" wherever a "sort -R" is needed
+	  (there are two such places, both in the "trymoves" file).
+sampleruns: This file presents the proper behavior of the tic-tac-toe program.
+            Look over the file to see what you are aiming to accomplish. In the
+	    file, you will notice that the computer never loses. You will also
+	    notice that wrong inputs from the user get rejected. You will also
+	    notice that rerunning the same game, with the same user moves may
+	    result in a different computer response, due to intentional
+	    randomness that is applied when multiple choices are equally good.
+testmakeamove: This file is a small script to assist you in testing whether
+               your "makeamove" script is correct. The script is simple:
+	          % cat testmakeamove
+                  #!/usr/bin/tcsh
+                  cp sampleinput4makeamove beforemove
+                  echo
+                  ./makeamove $1 $2 && echo WIN DETECTED
+                  cat aftermove
+               As you can see, the script prepares some input file, then it
+	       runs the makeamovescript, then prints whether the move caused a
+	       win, then it displays the state of the board after the move.
+sampleinput4makeamove: This file is used by the testmakeamove script, as you
+                       can see in the discussion of the testamove file, above.
+		       The contents of this sample input is sample a board 
+                       arrangement:
+		          % cat sampleinput4makeamove
+                          aXO
+                          XOf
+                          XhO
+                       What the contents of this file show is that "X" and "O"
+		       have each made 3 moves. This means that three positions
+		       remain available (as indicated by "a", "f", and "h").
+		       If you were to type "./testmakeamove O 2", then you
+		       would be testing the situation where the 7th move is
+		       for "O" and it is to go into the second of the three
+		       available positions (which would mean "f"). If you have
+		       a correct makeamove script, then the result of running
+		       "./testmakeamove O 2" would be a win for O.
+sampleoutput4makeamove: This file presents a variety of expected outputs for
+                        different invocations of the testmakeamove script.
+			If you cannot generate the same outputs, then your
+			"makeamove" file is broken.
+			If you do generate the same outputs, still realize that
+			not every win condition was tested.
+			If your "makeamove" script is broken, then the trymoves
+			script also won't work correctly. So you should fix
+			makeamove first.
+trymovestemplate: This file present the template of the trymoves script. You
+                  should make your trymoves script by modifying this template.
+                  By doing it this way, you get to keep the comments that are
+		  already in the file.
+
+
+********************************************
+* Line-by-Line Descriptions of the scripts *
+********************************************
+
+Script 1: makeamove
+"""""""""""""""""""
+
+Line 1:  #!/usr/bin/tcsh
+
+Line 2: This line is horribly long and confusing. It has a basic structure of:
+        cat beforemove | sed ___ | sed ___ > aftermove
+
+      - The above ___ blanks are of indeterminate length. Each can indicates a
+	sequence of any number of sed-commands, each separated by semicolons.
+	
+      - The job of the first ___ is to add spaces between the characters of the
+	input file. Since the input lines are initially 3 characters wide, they
+	become 5 characters wide.  For example: "aXO" -> "a X O" and "XOf" ->
+	"X O f".
+        But there is a little more to it, because you also need to insert empty
+	lines between the rows. So here is a representation of what this first
+	___ would do to a sample 3-input line file:
+                      aXO       a X O
+                      XOf  ==>
+                      XhO       X O f
+
+                                X h O
+
+        Here, the 2nd and 4th lines are completely empty(i.e., no spaces).
+
+        Now, to achieve a 6-line output requires nothing more than sed's "s"
+	command (which you have already learned). To create a five-line version
+	will require other sed command(s) which you will learn in Lecture 9.
+	Anyway, until you attend class on May 11, if you want to just make it
+	work (for the purposes of testing, not for submitting), you can
+	temporarily used "| head -5" to get rid of the final empty line.
+
+      - The first job of the second ___ is to put the marker indicated by $1
+        into the place of the letter indicated by $2. If, for example, $2 == 3,
+	then that would mean that the current move is to the third available
+	position (i.e., to the third letter that is between a and i -- which is
+	not always "c").
+	The second job of this second ___ is to insert lines connecting any 
+        match of three X's or O's on a row (you do not need to worry about 
+        drawing two lines in the rare case of winning in two ways, because it
+        is not possible with a computer player).
+	
+        If you want to see what the lines for wins are supposed to look like,
+        consult the "sampleoutput4makeamove" file.
+
+	So, how to accomplish the jobs of this second ___? Well there are three
+	steps:
+	Step 1: Use four "N" commands. We just learned about "N" in Lecture 9.
+	Anyway, I have already told you the answer: use four "N" commands.
+	The N command appends another line of the input file into the pattern
+	space. So, after performing four "N" commands, your pattern space will
+	hold all five piped-in lines, with four "\n" symbols separating the
+	lines.
+	Step 2: Use a single "s" command to replace the position indicated by
+	$2 with the marker indicated by $1. Note: the solution is simple, but
+	also clever; so you have to think.
+	Step 3: Now we want to look for every possible way to win: three in a
+	row horizontally, vertically, or diagonally. When a win is found, you
+	will need to replace the match with a line-connected version. Note:
+	although there are three types of matches (horizontal, vertical, and
+	diagonal), yet you will need more than three "s" commands, because the
+	lines must connect the proper things (eg., one type of diagonal uses
+	"/" symbols but the other uses "\"; one vertical line is in column 1
+        but another is in column 3).
+
+        Step 3 is very ugly. But it only uses the "s" command and sed concepts
+        that you have already learned in Lecture 8. So you can do it. The best
+        approach is to try to write a method to find just one kind of three in
+        a row; then test it and verify it; then add another kind; then test it;
+        then add another, until you have found all of the ways to win.
+
+        If you want an example, consider a check for whether the rightmost 
+        position in each row form a vertical three-in-a-row. Matching for this 
+        would mean that the input stream contained the following sequence:
+           {A marker (either X or O)} followed by {a \n} followed by
+              {Anything} followed by {a space} followed by
+                 {Anything} followed by {a space} followed by
+                    {The same marker} followed by {A \n} followed by
+                       {Anything} followed by {a space} followed by
+                          {Anything} followed by {a space} followed by
+                             {The same marker}
+       If a match to this pattern were found, then you would have to replace
+       the match with a version that include the vertical line.
+
+Line 3: The purpose of this line is to create a new "beforemove" file by using
+        the "aftermove" file created on line 2. The purpose here is to get rid
+        of the spaces (and possibly line connectors) from the aftermove file.
+        So the result is three lines of three characters again.
+
+Line 4: This line is a single grep command. Your goals are: 1) to never display
+        anything, and 2) to obtain an exit value from the script which is zero
+        if a win was detected on line 2.
+
+
+Script 2: trymoves
+""""""""""""""""""
+
+To begin, you should read the provided template, to get an overview of the
+script. In particular, read the comments. To implement the trymoves file, you
+should fill in the blanks (___) in the template. Sometimes one blank may 
+indicate a place where several commands need to be inserted.
+
+Lines 1-34: Exactly as in the provided template.
+
+Lines 35-36: These lines together evaluate the value of $1 (ie, the current
+             player's marker symbol, X or O), to create a new variable with
+             the opposite marker symbol. The purpose of this new variable will 
+             be so that the new marker symbol can be passed to the next-lower
+             level of recursion (and also so that it can be passed to the 
+             yourmove script when the computer has finished and it becomes
+             the user's turn).
+
+Line 37: This line initializes a variable to zero. Later, this variable will be
+         used to count the number of positions that are guaranteed to lose.
+
+Line 38: This line defines the variable "n" to equal the number of available
+         positions on the tic-tac-toe board. Of course, the current state of 
+         the board is contained in the "beforemove" file, which is why the 
+         template uses that file as the input for computing "n".
+
+Line 39: This line creates a copy of the "beforemove" file. The key feature of
+         this copy is that the value of $n is part of the file name. 
+         The reason for this copy is to support recursion. Each level of 
+         recursion will have its own idea of the "current state" of the board. 
+         But also, each level of recursion will have a unique value for $n (it
+         decreases naturally by one when you go down a recursion level, because
+         one of the available positions is filled before going into recursion).
+         This means that a copy with a name containing the value of $n will
+         be a unique copy, allowing each level of recursion to have its own 
+         concept of state.
+
+Lines 40-51: Exactly as in the provided template.
+         (By the way, the purpose of line 51 is to define the set of best moves
+         to make in response to each potential user move, given that the user
+         moved first. This is why the array has nine values, because the user
+         might have chosen any of the nine positions. You do not have to think
+         about what these responses ought to be, because I have already given
+         you the answer on line 51.)
+
+Line 52: This line defines a variable with a value in the range of 1 to 9. The
+         meaning of the number is the position of the user's move. (To have
+         reached line 52, the user must have made exactly one move, and so
+         exactly one of the letters (a-i) will have been replaced by an X or
+         an O.)
+         So, how to do it?
+         Step 1. Create a nine-line version of the beforemove file, with one
+                 letter per line. This step is achieved by the first two blanks
+                 of the template (i.e., by "cat beforemove | tr ___ | sed ___")
+         Step 2. Now we want the line number of the one that has been replaced
+                 by an X or an O. You will accomplish this by using some sed
+                 commands that you will learn in Lecture 9.
+
+Line 53: This line uses the value obtained on line 52 to defines a new variable
+         with the corresponding entry from the "alch" array defined on line 51.
+         For example, if the user had moved to the center position, then that
+         would be position 5, and the 5th position in the array is "1368" as
+         can be seen by examining line 51 of the template file.
+         The meaning of "1368" is that any of these positions are acceptable
+         responses to a center move. 
+         - But those who know how to play tic-tac-toe know that the correct 
+           response to a center move is to take a corner.
+           - So 1, 3, 6, and 8 must be the corners.
+             - But wait! Wouldn't the corners be 1, 3, 7, and 9?
+               No, they wouldn't. An "8", for example, means the 8th available
+               position. And since there are only 8 available positions, that
+               means that 8 is the lower right corner. 
+
+Lines 54-56: Exactly as in the provided template.
+
+Line 57: The purpose of this line is to make a move based on what was decided
+         upon on either line 53 or 55. There is no need to check the return 
+         value, because we know that we won't win on the first move.
+         The interesting part of line 57 is the `___`. This part deals with the
+         fact that there is often more than one equally-good choice. Consider,
+         for example, that the user went first and chose the center. Then the
+         computer's valid choices are 1, 3, 6, and 8 (see discussion of line
+         53, above). Now the `___` has the task of randomly choosing one of the
+         four positions.
+
+         So, how to do it?
+         Step 1. Send the position options (eg., such as 1368) into the pipe.
+         Step 2. USE SED to put each option on its own line.
+         Step 3. Use "sort -R | head -1" to get a random choice.
+
+Line 58: Now that the computer has moved, this line lets the user make the next
+         move. The only question is what argument value to pass in. The answer
+         is that it is the value of the variable created on lines 35 and 36.
+
+Lines 59-78: Exactly as in the provided template.
+
+Line 79: This for-loop must try all values between 1 and $n. (Remember that 
+         line 38 defined n as the number of available positions.)
+
+Line 80: This line is the reverse of line 39. It copies the copy back to the
+         original. What I mean is, the copy with the $n in its name is used to
+         overwrite the beforemove file.
+ 
+Line 81: Exactly as in the provided template.
+
+Line 82: This line checks to see if the previous command (i.e., the invocation
+         of the makeamove script on line 81) had exited with the "success"
+         value.
+
+Line 83: To reach this line, the move had produced a win. The question now
+         arises: Did we just win? The answer depends on whether we are in the
+         top level of recursion or not. If we are in the top level, then yes,
+         we (i.e., the computer) won. If we are in a lower recursion level, 
+         then no, we didn't win -- we (i.e. the computer or the user) only won
+         along this one speculative path.
+
+         So the first ___ on line 83 is checking for the situation of being at
+         the top level of recursion, based on $3.
+
+         The second ___ is responsible for displaying three things
+           - The message "The computer wins:"
+           - The final board state (i.e., the contents of aftermove)
+           - Two empty lines (for a more aesthetic output)
+         Now these three steps could have been accomplished by three commands
+         (echo...; cat...; echo...), but then would have had to use a C-shell
+         if-then-endif, instead of the one-line simple if. And, in addition,
+         we would miss a chance to use sed.
+        
+         So, how to do this second ___? The answer is that it requires you to
+         add in text at the beginning of the first line and the end of the last
+         line. You will learn in Lecture 9 about how to limit matches to 
+         specific line numbers.
+
+Lines 84-94: Exactly as in the provided template.
+
+Line 95: To reach this line, we know that there is only one position left on
+         the board.
+
+         The situation evaluated by line 95 is: Did we just tie? This is very
+         similar to the question addressed on line 83, and the implementations
+         of these two lines are equally similar.
+
+         The first ___ on line 95 is the same as the first ___ on line 83.
+
+         The second ___ on line 95 is ALMOST the same as the second ___ on 
+         line 83. The only difference is that the display message is "It is a
+	 tie:", instead of "The computer wins:"
+         based on $3.
+
+Lines 96-123: Exactly as in the provided template.
+
+Line 124: This is similar to line 79. But in this for-loop, we want to visit
+          the numbers from 1 to $n in a random order.
+
+Line 125: Identical to line 80. 
+
+Line 126: Exactly as in the provided template.
+
+Line 127: Similar to line 39, but for the aftermove file.
+
+Line 128: This is where the recursion happens. The only question is the values
+          of the arguments to pass in. Recall the discussion in the comments 
+          at the top of the template for information about the meaning of each
+          of these arguments.
+          Recall also lines 35 and 36.
+
+Line 129: The ___ in this line tests the value returned from the previous 
+          command (i.e., the value returned from the recursive call on line
+          128). Recall that the value returned from trymoves is a code for win,
+          lose, or tie. It is no longer the case that 0 indicates "success", 
+          because we have repurposed the exit command to perform the effect
+          of returning a function value.
+
+Line 130: Exactly as in the provided template.
+          This one tests for a returned value of 1. Now, since you have read 
+          the comments at the top of the template, you will know that a "1"
+          indicates that the "current player" has lost. BUT this is the 
+          returned value from a lower level of recursion. That player who lost
+          is not the one who now is the current player. So a return value of
+          "1" actually indicates that we have won.
+
+Line 131: Similar to lines 80 and 125, but for the aftermove file.
+
+Line 132: Recall that we are currently inside of a code region that indicates
+          we have won. There are two possible meanings:
+          1. We have only speculatively won (i.e., we are in recursion).
+          2. We have really won (in the sense that we can guarantee that this
+             move will eventually guarantee a win). 
+             Here are some thoughts about really winning:
+             - This can only be possible for the computer, since the AI never
+               loses.
+             - We know that the win is in the future (as opposed to right now
+               on this move) because a win right now would have already exited.
+
+             Line 132 deals with the case where we really win:
+             - The first ___ is the same as the first ___ on lines 83 and 95.
+             - The second ___ is the same as line 58.
+
+Lines 133-134: Exactly as in the provided template.
+
+Line 135: The line increments the counter that was initialized back on line 37.
+          Recall that the purpose of the counter was to count the ways that we
+          can lose. And by reaching line 135, we know that this is one of the
+          ways to lose.
+
+Lines 136-137: Exactly as in the provided template.
+
+Line 138: This present move is a way to tie. But we don't know if it is a
+          good idea to take this choice, because maybe there will be another 
+          available move that guarantees a win (after all, we are in a for loop
+          and other choices may not yet have been examined yet).
+          So, what we need to do is to remember this choice. Then, if the loop
+          finishes, we will know that none of the iterations were winners. A
+          tie then becomes the best option. And we will have remembered what 
+          the last tied choice was. (If there is more than one tie, then it
+          will remember the last one -- but that's fine because the choice is
+          random anyway.)
+          So, how to remember it? Well make a copy of the aftermove file.
+          But it is complicated in two ways:
+           1. Its not the original aftermove file, but rather the copy with
+              the value of $n in its name. This is because line 128 has made
+              a recursive call and therefore has overwritten the original.
+           2. The file that you are creating on this line (i.e., the file that
+              remembers that this is a solution that produces a tie) will also
+              need the value of $n in its name. This is because the next for
+              loop iteration will execute line 128 again, thereby possibly 
+              entering a future situation with a tie -- and that would over-
+              write the file that you are creating here (unless the names were
+              different, which is the point of the $n).
+
+Lines 139-141: Exactly as in the provided template.
+
+Line 142: This line tests the counter of line 135, to see if every for-loop
+          iteration had produced a loss. If so, you will exit with a "1" (the
+          code for losing).
+
+Line 143: To get here we know it was a tie. The issue now is whether it is a
+          speculative tie or a real tie.
+          Line 142 tests for whether this is not the top-level of recursion.
+          If so, then this is a speculative tie. Therefore, we pass "2" (the 
+          code for a tie) up to the calling recursion level.
+
+Line 145: Now we know that we have really tied.
+          On Line 145, we move the tying copy that we had made on line 138
+          to overwrite the aftermove file.
+          What this means is that we are making the move that we had remembered
+          would cause a tie.
+          Note: we do not need to worry about the file not existing, because
+                we could not have reached line 145 in that case.
+
+Line 145: Identical to line 58.
+
+
+Script 3: yourmove
+""""""""""""""""""
+
+Line 1: #!/usr/bin/tcsh
+Lines 2-3: These are identical to lines 35 and 36 of the trymoves script.
+
+Line 4: Almost identical to line 38 of the trymoves script, but that it is for 
+        "aftermove" instead of "beforemove".
+        Note: the formats of aftermove and beforemove are different, but that 
+              difference should not affect a properly designed line 4. 
+
+Line 5: if ( $n < 9 ) echo "\n\nThe computer moves:"
+        Note: there may be some people for whom "echo \n" does not work on 
+              their implementation. Those people may instead use (both here and
+              elsewhere):
+                  if ( $n < 9 ) echo "@@The computer moves:" | tr @ \\n
+
+Line 6: cat aftermove 
+Line 7: echo -n "\nWhat is your move? (a-i) "
+Line 8: while ( 1 )
+
+Line 9: Read a keyboard input
+
+Line 10: Test that keyboard input against the valid choices, which are lower
+         case letters between a and i.
+
+Line 11: Now we know that the letter is valid. But that doesn't mean it is 
+         available. 
+         First, this line uses grep to search for the letter in the aftermove
+         file. It must not produce any output (i.e., use /dev/null).
+         Second, if the grep was successful, it breaks out of the while loop.
+
+Line 12:     echo -n "Sorry. You must enter an available choice (a-i): "
+Line 13:   else
+Line 14:     echo -n "Sorry. You must enter a valid choice (a-i): "
+Line 15:   endif
+Line 16: end
+Line 17: if ( $n == 1 ) echo "\n\nIts a tie:"
+Line 18: if ( $n > 1 ) echo "\n\nYour move:"
+
+Line 19: cat aftermove | sed ___
+         The purpose of the ___ is to replace the chosen position (from line 9)
+         with the marker symbol for the user (which is passed in as $1).
+
+         The result of running line 19 is that your move displays.
+         
+Line 20: cat aftermove | sed ___ | tr ___ | grep ___ > beforemove
+         The purpose of this line is to make your move official, by putting 
+         it into the beforemove file. But remember that the format of the 
+         beforemove and aftermove files are different.
+
+         The first ___ is identical to in line 19.
+         The second ___ controls tr to remove any symbols that you would not
+         expect to see in a beforemove file.
+         The third ___ gets rid of empty lines by searching for an expression
+         that won't match such lines.
+
+Line 21: if ( $n > 1 ) ./trymoves ___ 1 1
+         The ___ is the variable defined on lines 2 and 3.
+
+         The purpose of this line is to pass control to the computer after your
+         move was taken.
+        
+         The first parameter indicates the marker symbol for the computer.
+         The second parameter indicates that it is a computer move.
+         The third parameter indicates the top level of recursion.
+
+
+Script 4: tictactoe
+"""""""""""""""""""
+This is the script that the user runs. It passes control to either trymoves or
+yourmove, depending on who goes first.
+
+Line 1: #!/usr/bin/tcsh
+Line 2: echo -n "Which symbol are you? (x/o) "
+Line 3: while ( 1 )
+
+Line 4: Read an input from the keyboard.
+
+Line 5: If the input is valid, then break.
+        We define a valid input as any of these: upper-case X, lower-case x,
+	upper-case O, lower-case o, and also the number 0.
+	
+Line 6:   echo -n "Sorry. You must enter a valid choice (x/o): "
+Line 7: end
+Line 8: echo -n "Do you want to go first? (y/n) "
+Line 9: while ( 1 )
+
+Line 10: Read an input from the keyboard.
+
+Line 11: If the input is valid, then break.
+         We define a valid input as any string that begins with either a "Y",
+	 or a "y", or a "N", or a "n". So these are all valid: "yEs", "NO",
+	 "nerp", "n", "Y", "yellow"
+
+Line 12:   echo -n "Sorry. You must enter a valid choice (y/n): "
+Line 13: end
+Line 14: <empty>
+
+Line 15: if ( ___ ) then
+         The ___ is a test for all of the strings that map to the "No" case on
+	 line 10.
+	 
+Line 16:   echo 'abc\ndef\nghi' > beforemove
+Line 17:   if ( ___ )   ./trymoves O 1 1
+           The ___ is a test for the "X" or "x" answer on line 4.
+           Note, in the above invocation of trymoves, the first argument is an
+	   upper-case "O".
+          
+Line 18:   if ( ___ )   ./trymoves X 1 1
+           The ___ is a test for the "O" or "o" or "0" answer on line 4.
+          
+Line 19: else
+Line 20:   echo 'a b c\n\nd e f\n\ng h i' > aftermove
+
+Line 21:   if ( ___ )   ./yourmove X
+           The ___ is a test for the "X" or "x" answer on line 4.
+          
+Line 22:   if ( ___ )   ./yourmove O
+           The ___ is a test for the "O" or "o" or "0" answer on line 4.
+           Note, the above argument is an upper-case "O".
+
+Line 23: endif

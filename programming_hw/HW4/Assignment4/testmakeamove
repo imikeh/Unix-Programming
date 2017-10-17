@@ -1,0 +1,5 @@
+#!/usr/bin/tcsh
+cp sampleinput4makeamove beforemove
+echo
+./makeamove $1 $2 && echo WIN DETECTED
+cat aftermove

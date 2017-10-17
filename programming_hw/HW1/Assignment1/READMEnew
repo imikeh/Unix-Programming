@@ -1,0 +1,941 @@
+                          UNIX System Programming
+                         Programming Assignment #1
+                           "alias dunnet=shell"
+
+Due: Thursday, April 2  at  11:59 pm.
+
+Submission method: You will post to the course website. The TAs will post 
+                   instructions on how to do this.
+
+Submission rules: I REQUIRE you to FOLLOW THESE RULES:
+
+                  1. Submit two files: one tar file and one text file.
+
+                  2. The name of these files will be "<your student ID>.tar"
+                     and "<your student ID>.dunnet"
+                     You will, of course, replace "<your student ID>" with
+                     your unique ID number (B9.... or M9....)
+
+                  3. Submissions made after the deadline will be ignored.
+                     (That means, no late submissions on this assignment.)
+                     (By the way, if you don't turn in your assignments, you
+                      will probably Fail The Class. That's a Fact. So start
+                      early and ask questions.)
+                  
+                  This is a large class. Unless each of you follows the above
+                  rules, the TAs' work becomes so hard. So I INSIST that you 
+                  FOLLOW the above rules. If you don't, we won't accept your 
+                  homework.
+
+                  If you have questions about these rules, you may post your 
+                  questions to the course website.
+
+
+Getting help:   - The Professor has office hours on Monday from 12:20-2:20, 
+                  and on Friday from 10:00-12:00, in room 9037.  He can also 
+                  be reached by email.
+                - The TAs are also available to answer your questions.
+                - Questions about the assignment can be posted to the 
+                  Discussion Forum.
+                - You may also discuss the ideas of the assignment with your
+                  classmates. Such discussion can be quite helpful to your 
+                  learning -- IF you ONLY talk about the concepts of the 
+                  assignment in the abstract. If, however, you discuss 
+                  specific implementation details of this assignment, then 
+                  you are not helping each others to learn; you are just 
+                  doing the work for them.
+		  And note: you may not share code. You CANNOT show another
+		  student ANY part of the answer to the assignment.
+
+Cheating policy:  If students are found to be sharing work, they will receive 
+                  a 0 for this course, or worse.
+                  It is cheating to let another student see your work, or to 
+                  let them look over your shoulder when your code is on the
+		  screen.
+                  We always look for evidence of cheating, so don't do it.
+                  (In any event, even if you do not get caught, a student who 
+                  copies the homework will not learn the material, so they 
+                  will fail the exam.)
+
+		  
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Assignment Summary:
+
+Part 1. The Concept of the Assignment
+"""""""""""""""""""""""""""""""""""""
+In the first two weeks, you learned about creating directories, files, hidden
+files, and links. You learned about navigating directory structures. In order
+to reinforce these concepts that you have learned, an assignment needs to be
+given. In deciding on an assignment, I recognized that a natural similarity
+exists between navigating the directories in a file system as compared to
+navigating the "rooms" in a text-based adventure game. Thus was the concept of
+the assignment formed.
+
+Having decided to make the students write a game, the problem arises that you
+don't actually know how to write a UNIX program yet. You can write some simple
+UNIX commands, but you have not learned how to create variables. And you have
+not learned how to produce loop structures. Nonetheless, the present assignment
+will enable you to write a game, even though you don't write a program. As
+strange as that may sound, it is possible to do this by making the UNIX command
+prompt system become the game. This is accomplished by creating many aliases.
+
+In those first two weeks you learned about the 'alias' command and a variety of
+other basic commands which you will get practice using in this assignment. You
+also learned about the conditional execution of commands (via the && and ||
+method). Conditional execution is a significant part of this assignment.
+
+
+Part 2. Details of the Game Play.
+"""""""""""""""""""""""""""""""""
+In this assignment, you will implement a modified version of an emacs-based
+game called dunnet. (It's weird, I know. Why would an editor have games? But
+it does.)
+
+You don't actually need to play the original game in order for you to do the
+assignment. But, if you think it would be helpful to your understanding, then
+you can play this game by typing "emacs -batch -l dunnet" on the command line.
+(If that doesn't work (sometimes it doesn't -- I don't know why) then you can
+still play it from the games menu in emacs by pressing: alt-`, then t, then g,
+then a.) Once the game loads, type "restore ~/Assignment1/start" to load up to
+the point in the game that you are being asked to implement.
+
+The part of the game that you are creating has the following mapping of rooms:
+                                                   s
+ Receiving_room                   Reception_area------->Healthclub_front 
+      |^                                 ^|     <-------      |^
+     e||w                              nw||se      n         s||n
+      V|     e                           |V                   V|
+    Hallway --> Sauna       /--------- Maze6---+       Northern_lakefront
+      |^    <--            /             ^     |              |^
+     n||s    w            /            nw|     |             s||n
+      V|                 /               |     |d             V|
+    Hallway             /ne            Maze5   |e      Southern_lakefront
+      |^               /                 ^|    |n              |
+     e||w             /                 d||se  |s             s|
+      V|             /            se     |V    |w              V
+   Weightroom<------/      Maze3 ----> Maze4   |se       Cave_entrance
+      |^                     ^|         |      |sw        (finished)
+     d||u(maybe)            u||d,e,s    |w     |
+      V|      nw(maybe)      |V         |      |
+    Maze1 ---------------> Maze2 <------+------+
+
+
+In the section of the game that you will be recreating there are 5 ways for 
+the game to end.
+1) If the player reaches the end (of the implemented part of the game).
+2) If the player types "quit".
+3) If the player dies by swimming without a lifepreserver.
+4) If the player makes the sauna too hot.
+5) If the player walks around without a lamp while inside. 
+   This part has been simplified by me. You need a lamp at all times, not just
+   inside. And you die when you try to move without a lamp, not on the second
+   move.
+
+The section of the game that you are creating contains five puzzles:
+1) How to press the button in the room below the weight room.
+   The solution is to drop the weight on it. 
+   In the game, this means typing "drop weight." But you can't do things like
+   this yet; all of your commands will need to be single words. So I instead
+   have you implement a specific command called "dropweight." 
+   Similarly, you can't type two words when you want to pick something up. So,
+   instead, you just type "get" and it will pick up everything it can.) But the
+   weight is heavy and requires you to drop everything but the lamp before you
+   can pick it up. So, in my version, I simplified this puzzle. If you try to 
+   pick up the weight, it automatically drops everything except the lamp.
+2) How to navigate your way around the maze, with its confusingly linked up 
+   rooms and with its lack of descriptions and information about visible exits.
+   I simplified this assignment for you, by naming the six rooms of the maze
+   as Maze1, Maze2, ... Maze6 (as opposed to each just being called "Maze"). 
+   This makes it much easier for you not to get lost as you code the game. I 
+   also provide you with a map of the connections (it is earlier in this README
+   file). Note that the map shows only the paths that lead to new places.
+   (Within the maze, some paths loop back on themselves. See lines 488-493 and
+   lines 274-295 for a discussion of which paths these are.)
+3) How to melt the wax statuette to get the diamond. This is done by bringing
+   the statuette into the sauna, then turning the dial until it melts.
+   In my version, you have to turn the dial AFTER you bring the statuette into
+   the sauna. This was just to make it a little easier for you to implement.
+4) How to not destroy the floppy disk. You have to drop it before you enter 
+   the sauna. Here, as with dropping the weight, you can't type two words, so
+   you will type "dropfloppy"
+5) How not to drown. You need the lifepreserver. And this means you have to
+   go back to the weightroom a second time before you go to the lake.
+
+
+Part 3. A Walkthrough of the Perfect Gameplay
+"""""""""""""""""""""""""""""""""""""""""""""
+Type "less ~/Assignment1/walkthrough"
+The file that you see displayed is an example of the game solved in the
+minimum number of moves (although fewer moves are possible if you don't want
+the diamond).
+The file shows you how your game is expected to respond to each command.
+You can also see that the game is started by typing three commands on the
+UNIX prompt:
+  % sh <-- This command starts a new shell. (The purpose is so that the game
+           won't have as many side effects when it ends, because it will exit
+           the shell when it finishes. This will take you back to the shell you
+           had at startup. For example, the directory will be restored to where
+           you were before you ran the game.)
+  % source ~/dunnet <-- This command runs your script for defining the aliases 
+           used in your game.
+  % dunnet <-- This command is one of the aliases that you will have defined
+           in your ~/dunnet file. It actually begins the game. But, that does 
+           not mean that it runs a program (remember, this is an unusual
+           assignment where there is no real program). Instead, the "dunnet"
+           command is aliased to accomplish start up tasks: 
+            - Changing the prompt to "> ".
+            - Clearing the screen.
+            - Removing the HW1 directory, if present.
+            - Expanding the tar file that contains the initial state of the HW1
+              directory.
+            - Going to the starting room room (~/HW1/Receiving_room)
+            - Displaying the contents of this room
+           After finishing these tasks, the dunnet command is finished. But it
+           feels to the game player that the dunnet command is still running,
+           because the prompt symbol continues to be "> ".
+
+
+Part 4. How You Move Between Rooms
+""""""""""""""""""""""""""""""""""
+In the game, you move east by typing "e", and south by typing "s", etc. You
+will implement this behavior by creating aliases for the 10 directions in
+which the game lets you move. These aliases are, at their core, "cd" commands.
+Each room is a directory and each exit direction is a link to the next
+directory. 
+
+Regarding links, please note three things:
+ - ALL of these links must use relative addressing (as described in lecture 1).
+   Otherwise your game will not be portable to other computers.
+ - The command "ls -lA" will show all of your links in the current room so that
+   you can see if they are right.
+ - If a link is wrong, you have to remove it before you can create a new one 
+   with that name.
+
+
+The game follows an essentially linear progression. To understand what I mean
+by that, look at the map shown above. The path to the final winning room is:
+Receiving_room -> Hallway -> Hallway -> Weightroom -> Maze1 -> Maze2 -> Maze3
+-> Maze4 -> Maze5 -> Maze6 -> Reception_area -> Healthclub_front ->
+Northern_lakefront -> Southern_lakefront -> Cave_entrance
+
+This path touches every room except the sauna. (Note: you can't actually take
+this path as shown, because you would drown when you tried to cross the lake,
+because you didn't go back to the weightroom to get the lifepreserver. But that
+is not the point. The point is that the game is mostly linear in its room
+arrangement.)
+
+Because the rooms are laid out linearly, it is natural to make the next room
+in the progression to be a child directory under the directory for the room
+that leads to it. In most cases, this is what you will do.
+
+But, if you analyze the original game, you will find that there are four
+different ways that one room can lead to another:
+  1. Normal exits. These are visible and lead in the direction that they say.
+                   You will implement them by creating links with names like
+		   "e", "se", etc.
+  2. Hidden exits. The maze puzzle is a puzzle because the exits don't display,
+                   even though you can go in those directions.
+                   These exits are implement with links that use hidden names,
+		   such as ".e", ".se", etc.
+  3. Changing exits.In the first room of the maze, there is a button on the
+                   floor. Until you press the button, the only exit is up (to
+		   the weightroom). But when you press the button, then: 1)the
+		   up direction is invalidated, 2)nw leads to Maze2, and 3) a
+		   variety of other directions lead back to this same room.
+		   These 3 effects are implemented, respectively, by 1)removing
+		   the "u" link, 2)renaming the directory for the second room
+		   of the maze to "Maze2", and 3)moving a set of links from a
+		   directory that I provide.
+  4. Locked doors. This year we don't do the part of the game with such doors.
+                   But when we did it last year, it was implemented as a
+		   directory that you did not have execute permission for (so
+		   you could see it but not enter it). When you got the key,
+		   then you would use chmod to unlock the door.
+		   
+  Now, among these above types of exits, the "changing exits" is the confusing
+  one that requires more detail to explain:
+   - I described renaming some directory to "Maze2". What this specifically
+     means is that you will create a ".Maze2" directory as a direct child of
+     your "HW1" directory. You make it a child of "HW1" (rather than a child
+     of "Maze1") just to keep the paths from getting so long as to be ugly. 
+     When you drop the weight on the button, then you just rename ".Maze2" to
+     "Maze2".
+     You don't have to create the link at that time, because you will have
+     already created it when you made the directory structure. What I mean is,
+     the game starts with the Maze1 directory already containing a link (named
+     ".nw") to the Maze2 directory -- even though the Maze2 directory does not
+     initially exist (being, instead, named ".Maze2"). Thus, a command to move
+     nw will fail (as, indeed, it should) if the "Maze2" directory has not yet
+     been renamed from ".Maze2".
+   - I also described "moving a set of links from a directory that I provide."
+     What I mean by this is that I did provide you with some files (including
+     this README file that you are reading right now). If you look in the
+     ~/Assignment1/directory, you will see several other files and directories.
+     These will each be described below. But let's start by looking at the
+     provided directory called "Maze1links":
+        % ls -lA Maze1links
+        total 6
+        lrwxrwxrwx 1 Me None 1 Mar 13 21:40 .d -> .
+        lrwxrwxrwx 1 Me None 1 Mar 13 21:40 .e -> .
+        lrwxrwxrwx 1 Me None 1 Mar 13 21:40 .ne -> .
+        lrwxrwxrwx 1 Me None 1 Mar 13 21:40 .se -> .
+        lrwxrwxrwx 1 Me None 1 Mar 13 21:40 .sw -> .
+        lrwxrwxrwx 1 Me None 1 Mar 13 21:40 .w -> .
+     Here, we see that these directions take us nowhere. So, for example, if
+     you are in Maze1 (with the button pressed) and you type "e" then you will
+     not actually move. Note, if you type "n" you also will not move -- but, in
+     that case you would get a message warning that you cannot move in that
+     direction. And, of course, if you type "nw" then you would go to Maze2,
+     because that link is not part of what is provided in Maze1links.
+     Actually, I did not really need to provide you with this directory. It is
+     a simple matter to use ln to create these links yourself (and, indeed, you
+     will use "ln" a lot in this assignment). But I gave you these links to 
+     help give you an idea about how this type of thing will be done.
+
+
+Part 5. How to Display What Is in a Room.
+"""""""""""""""""""""""""""""""""""""""""
+In the game, a description displays the first time that you enter a room.
+It does not redisplay when you reenter the room (but you can make it display
+again by typing "look").
+In the game it also tells you what objects are in the room. In addition, your
+version (but not the original game) lists "visible exits".
+
+
+For example, when you start the game you see:
+
+Receiving_room
+You are in a round, stone room with a door to the east.  There
+is a sign on the wall that reads: 'receiving room'.
+Visible exits: e  .
+Items present: key  lamp  paper  shovel  .
+
+It is very dark. You are likely to be eaten by a grue.
+
+> get       <------ I typed this so that I would not die when I moved
+Done.
+Receiving_room
+Visible exits: e  .
+Items present: .  <--- See. No items are present anymore (because I have them).
+> e         <------ I typed this to go to the next room and see its display:
+Hallway
+You are at the south end of a hallway that leads to the north.  There
+are rooms to the east and west.
+Visible exits: e  n  w  .
+Items present: .
+> w         <------ Now go back to the first room, to show how it displays.
+Receiving_room   <--- See. It gives the rooms name, but not the description.
+Visible exits: e  .
+Items present: .
+> look      <------ Now we make the description display again
+Receiving_room
+You are in a round, stone room with a door to the east.  There
+is a sign on the wall that reads: 'receiving room'.
+Visible exits: e  .
+Items present: .
+>
+
+This is all accomplished by a series of cat and ls commands. To understand,
+lets look at part of the above text:
+      > e
+1     Hallway
+2     You are at the south end of a hallway that leads to the north.  There
+3     are rooms to the east and west.
+4     Visible exits: e  n  w  .
+5     Items present: .
+      
+      Regarding Line 1 ("Hallway")
+        Each room is a directory. The names of the directories are the one-word
+        names seen that display on this line (eg., Receiving_room and Hallway).
+
+      Regarding Lines 2 and 3.
+        These lines are lifted from the original dunnet game.
+        When your game begins running, each directory must contain a file
+        called "description".
+        Whenever you enter the room you display this file AND you make it a 
+        hidden file. This produces two consequences: 
+          1) It only displays the first time you enter the room
+          2) The file is not erased (just hidden) so that a "look" command
+             can still display it.
+        Rather than making you type these descriptions, I have provided them
+        in the "~/Assignments/descriptions" directory. But you will need to
+        copy these files into the appropriate directories that you create.
+
+      Regarding Line 4 ("Visible exits: e  n  w  .")
+        The displayed directions are all links within the room's directory.
+        They are distinguished from other files in the directory because of
+        their short names (1-2 characters). They are distinguished from exits
+        that are not visible (i.e., exits within the maze) because these links
+        are not hidden. 
+        In other words, you implement this with an "ls" command.
+
+      Regarding Line 5 ("Items present: .")
+        Items present within the room are represented by files with the same
+        name as the item. The contents of these files do not matter, they can
+        be whatever you like (they can even be empty). The only requirement is
+        that they have the correct names and are placed into the correct
+        directories.
+        In the present case of the south-side of the hallway, there are no
+        items present. (At least, not at the start -- you might choose to drop
+        something here. In that case, it should display as being present.)
+        Again, as with Line 4, you implement Line 5 with an "ls" command. And,
+        again, you need some care in constructing the wildcard pattern for the
+        ls command so as to ensure that all items can display and that nothing
+        else will display.
+
+Part 6. Handling Items.
+"""""""""""""""""""""""
+As just mentioned, items are indicated by filenames. Items are manipulated in
+several ways:
+  1. Your held items can be displayed by typing "inv".
+     When this is done, the contents of your items directory are listed.
+  2. Items can be picked up.
+     This is accomplished by moving the file from the room directory to your
+     inventory directory.
+     You pick up items by typing "get". This will pick up all presently
+     available items are picked up, with two exceptions:
+     - The weight is too heavy to hold along with the other objects. The
+       way of dealing with this has already been described.
+     - The "dial" and the "congratulations_sign" cannot be picked up.
+       this means that the mv command that you use to implement the "get"
+       operation must be carefully designed.
+  3. Items can be dropped.
+     To simplify the alias commands, I only allow three ways of dropping:
+     - "dropall" moves everything from the items directory to the room
+       directory.
+     - "dropfloppy" drops just the floppy disk (if you have it).
+     - "dropweight" drops the weight. This might have the consequence of
+       pressing the button, so that the Maze2 becomes reachable.
+  4. The dial can be turned, causing the sauna temperature to change and also
+     possibly melting the statue or killing the player.
+     This is managed by maintaining the sauna's state with a hidden file:
+     .sauna0 = room temperature.
+     .sauna1, .sauna2 = hotter.
+     .sauna3 = hot enough to melt the wax.
+     .sauna4 = hot enough to kill the player. (You don't need to actually make
+               this file, because you die immediately.)
+     Of course, as with the items, the name of these files is important, not
+     their contents.
+
+
+Part 7: Creating the Directory Structure and Its Tar File.
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+The assignment requires you to submit a tar file and a script of aliases.
+The tar file is definitely the easier half of the assignment and you need to
+do it first.
+
+The directory structure of the game, including rooms and items, etc. should
+be named "~/HW1". Inside of this directory are five subdirectories:
+1. Receiving_room <- This is the directory for the room in which you start the 
+                     game.
+2. .Maze2 <- Part 4 of this README file has described why this file isn't named
+             "Maze2" (brief recap: it is to prevent you from going there if the
+             button is not pressed).
+             Part4 also described why it is made a child of HW1 rather than of 
+             "Maze1" (brief recap: it is to keep the paths from getting so
+             long that they are ugly).
+3. Maze1links <- Part 4 also described a directory of links to move into the
+                 Maze1 directory when the button is pressed. This is where that
+                 directory goes.
+                 Therefore, you don't need to create this directory or its
+                 contents. Instead, you just move it to here from its initial
+                 location in "~/Assignment1/Maze1links".
+4. items <- Part 6 of this README file has described that you need a directory
+            for your inventory of held items. This is that directory. It starts
+            out empty.
+5. msgs <- At various times within the game, some sort of message needs to be
+           displayed. For short messages, you will use echo. But in some cases,
+           such as longer messages, I have provided you with the messages 
+           already, so that you don't have to type them.
+           These messages can be found at "~/Assignment1/msgs".
+           So you need to move that directory to this location.
+           In the second part of the assignment, your aliases will display
+           these files.
+           You can get an idea about these files by looking at their names:
+           % cd ~/Assignment1/msgs
+           % ls
+           floppy     gruewarn   nosauna  sauna1  sauna3      wax
+           gruedeath  lakedeath  sauna0   sauna2  saunadeath
+
+           The names show about when they are to be used. For example:
+           % cat nosauna
+           You do not see anything to turn.
+
+           This message makes sense because the dial that you turn is only in
+           the sauna.
+
+To see the contents of each of these 5 directories (and also of their sub-
+directories) you can go to the HW1 directory and type "find .", but I don't 
+like the way the output displays, because the files within a single directory
+might get separated from each other in the display, if some subdirectory is 
+alphabetically between them.
+So, to keep the files of each directory grouped together in the output, I would
+rather sort them by the number of directory levels. To do that, type:
+   % find . | awk -F/ '{print NF,$0}' | sort -g > subdirStructure
+
+   Now, you don't know awk yet. But you can still type this and view the output
+   of find, sorted by the number of directory levels.
+
+If you finish creating the subdirectories and filling them with the right files
+and links, then your subdirStructure file should be identical to the file that
+I have provided "~/ExpectedResultOfFind". You can even verify that they are the
+same by using "diff" -- if they are the same, then no differences will print:
+  % diff subdirStructure ~/ExpectedResultOfFind
+  %
+
+One thing that you will notice about the ~/ExpectedResultOfFind file is that it
+contains some movement directions that are not shown in the map I gave you near
+the top of this README file. These movements are all in the maze, and they
+indicate moves that go nowhere. In other words, they are links like the 6 that
+I already gave you in the Assignment1/Maze1links directory (except that you
+have to do these ones yourself).
+
+Another thing that you will notice is that it contains certain objects placed 
+in certain locations. You should do the same. It also contains some files:
+.sauna0, .lakenorth, and .lakesouth. The contents of these files don't matter.
+But they need to exist in the indicated places, because the aliases will use
+them.
+
+Be aware that:
+ 1. Your directories are not correct if they do not match to the provided
+    ExpectedResultOfFind file.
+ 2. Your answer could still be wrong even if it matches. The links might point
+    to the wrong places, for example.
+
+Once you have completed this, you can make a tar file of the HW1 directory.
+Your tarfile should not just be the contents of HW1, but also the HW1 directory
+itself.
+
+This tarfile is now important in 2 ways:
+ 1. It is one of the two files that you submit for this homework (follow the
+    naming rules described at the top of this file).
+ 2. It used by the dunnet alias that is part of the alias script described in
+    Part 8.
+
+
+Part 8. The Script File of Aliases.
+"""""""""""""""""""""""""""""""""""
+                               ************
+                               * ALIAS #1 *
+                               ************
+The first alias is to deal with the grue. This might mean issuing a warning.
+And it might mean dying, if you were already warned.
+
+The logic is: if (alreadyWarned) then display gruedeath and exit
+              else if (lampOwned) then nothing
+	      else ( display gruewarn and mark as alreadyWarned )
+
+This logic is implemented as a string of 6 commands. ONLY the && and || command
+coordination operators are used to connect these operators (i.e., the | and ;
+operators are not to be used). (In fact, the | operator is never used in this
+assignment).
+
+So let's consider the parts of this logic:
+
+  if (alreadyWarned)
+    One way to tell if you were already warned is to create a hidden file
+    within your items directory. So, if the file is not there, you were not
+    warned yet.
+    But, how to see if the file is there? Well, go check lecture 1 and you will
+    find that one of the commands that we have been frequently using can list
+    a file if it is within a directory. And IF IT IS NOT in the directory, then
+    the command will complain (i.e., provide a FAIL condition to the next
+    command coordination operator).
+    This PASS/FAIL signal is what we want. We don't really want to see the file
+    listed to the screen, and we don't really want to see the warning message
+    either. Well, if you look in lecture 2, you will see that there is a way
+    to redirect ALL output to a file. The filename that you will redirect to
+    is "/dev/null". This a special file that you use in UNIX when you just want
+    to throw away the screen output.
+
+  then display gruedeath
+    The gruedeath file is in "~/HW1/msgs". Is there a way to display the
+    contents of a file? Yes, there is. We've been using it a lot; you can read
+    about it in lecture 1.
+
+  and exit
+    The third command literally is "exit"
+    You don't know the exit command yet. But it is undoing the effect of the
+    earlier-typed "sh" command. By earlier, I mean: Line 1 of the walkthrough
+    runs sh.
+
+  else if (lampOwned) then nothing
+    above, to implement "if (alreadyWarned)" we had to find a way to check for
+    a file's existence but also to not display anything by throwing away (i.e.,
+    redirecting) the output.
+    We want to do the same thing here, but for the "lamp" file in the items
+    directory.
+    And as for the "then nothing" part, there's literally nothing to put there.
+    
+  else display gruewarn
+    Handle this just like you displayed the gruedeath message. The file is
+    similarly found in "~/HW1/msgs".
+
+  and mark as alreadyWarned
+    This means creating the file used in "if (alreadyWarned)"
+    
+On a final note, the logic described above had actually used parentheses, ( ),:
+"( display gruewarn and mark as alreadyWarned )"
+These parentheses are needed to make both of the enclosed commands execute
+under the same condition.
+for example:
+ cmd1 || cmd2 && cmd3   if cmd1 SUCCEEDS then cmd2 SKIPS but cmd3 RUNS.
+
+but:
+ cmd1 || ( cmd2 && cmd3 )  if cmd1 SUCCEEDS then cmd2 and cmd3 both SKIP.
+
+This is the ONLY alias that requires using the ( and ) operators.
+
+
+                               ************
+                               * ALIAS #2 *
+                               ************
+Call this alias "show". It performs many steps to show the room:
+   1. Make the path absolute
+   2. Display the name of the room
+   3. Describe the room if it hasn't been visited and then mark it as visited
+   4. Display the visible exits
+   5. Display the items present
+   6. Perform the grue test
+
+It will be implemented with 6 ";" and 1 "&&" command coordination operators.
+
+And now the details for each of these steps:
+   1. Make the path absolute
+      The reason for this line is that the we don't want the path to have links
+      in it.
+      This command is short (11 characters), but it is tricky.
+        There is a command in Lecture 1 that let's you see the path to the
+	present working directory.
+        -> But this command displays the path with symbolic links. So you need
+	   to use "man" to find the flag that makes the path physical.
+	   -> So now the we can make the physical path display on the screen,
+	      but that is not our goal. We want to actually make the path
+	      absolute.
+	      Well, there is a command in lecture 1 that let's you change the
+	      directory.
+	      -> OK. So we want to change the directory to a path we can
+	         display to the screen. This requires a method from Lecture 3,
+		 which runs a command, then converts its screen output to
+		 instead became arguments to a second command. In this case,
+		 I won't let you use xargs, because I am requiring an 11
+		 character solution.
+		 
+   2. Display the name of the room
+      Now that the pathname is absolute, the rightmost directory name in the
+      path is, in fact, the room name.
+      But how to display the room name? Well, we know how to display the
+      present working directory (we must know, because we did it already in
+      the previous step).
+      -> But how to print ONLY the rightmost directory name?
+         Use the "basename" command. That's exactly what the command does:
+	 the argument to basename is a full path and it displays the last part.
+	 -> But how to make the path an argument? Use the same Lecture 3 method
+	    that you used in step 1. The full command will be 14 characters.
+      Note: The above two steps are the only parts of this assignment that
+            require concepts from Lecture 3.
+	    
+   3. Describe the room if it hasn't been visited and then mark it as visited
+      This achieved with two commands:
+        The first command displays the description file.
+	-> But that file might not exist (because the room might have been
+	   visited before).
+	   In that case, you would NOT want to see an error message about not
+	   being able to display the file.
+	   Lecture 2 shows you how to redirect just error messages to the
+	   /dev/null file.
+	The second command should only execute if the first succeeded. This
+	command "marks it as visited". What does that mean?
+        -> Well, Part 5 has already told us. It said that the description file
+	   should be made hidden.
+           -> And that means you rename it to a hidden name.
+              -> One more point: we don't want to see ANY output from this
+	         command; send it all to /dev/null.
+
+   4. Display the visible exits
+      This is two commands:
+        The first command prints "Visible exits: "
+	-> It must not advance the cursor to the next line.
+
+        The second command displays the visible exits and then a period (.).
+        -> To prevent the linked directories contents from also displaying, you
+	   will need a flag.
+        -> Several wildcard patterns will be needed.
+	   -> The period will be the last of these patterns.
+	      The period means the current directory. But here it will seem, to
+	      the user, to be a period at the end of a sentence listing visible
+              exits.
+	      -> You will need to use a flag to keep the output from being
+	         sorted (otherwise the period will not stay at the end).
+	   -> With several patterns to search, some may have no matches. That
+	      is OK, but we don't want to see warning messages. Redirect these.
+
+   5. Display the items present
+      This is very similar to step 4. It also is two commands:
+        The first command prints "Items presents: "
+	-> It must not advance the cursor to the next line.
+
+        The second command displays the visible exits and then a period (.).
+        -> In this case 1 pattern is sufficient (along with also a second
+	   argument that is, again, a period).
+           -> But you need to be careful with this pattern so that it only
+	      displays items. To do this, consider the set of all possile items
+	      (including the dial, the button, or the congratulations_sign) and
+	      look for a pattern that matches all of these items but that
+	      matches no other potential files in the room directories.
+	      
+   6. Perform the grue test
+      This command simply invokes the alias defined on line 1 of this script.
+      
+
+                               ************
+                               * ALIAS #3 *
+                               ************
+Call this alias "look". It performs many steps to show the room:
+   1. Display the name of the room
+   2. Describe the room
+   3. Display the visible exits
+   4. Display the items present
+
+Clearly, this is a simpler version of the show command.
+Implement it just the same, except for describing the room. This part displays
+the hidden file. (We don't need to worry about whether it might not be hidden,
+because there is no way to look at a room that you haven't already entered.)
+
+
+                               ************
+                               * ALIAS #4 *
+                               ************
+Call this alias "inv". It displays the items that you are holding.
+The steps are:
+ 1. Display "Items in your inventory: "
+ 2. Change to the items directory
+ 3. List this directory's contents, just like step 5 of alias #2.
+ 4. Change the directory back to where it was previously (Lecture 1 tells you
+    how). Also, we don't want to see any output from this.
+
+
+                               ************
+                               * ALIAS #5 *
+                               ************
+This alias handles moving east. Its name is "e"
+The logic is:
+1.Try moving east by following the "e" link. But don't allow anything to print.
+  -> If that doesn't work, then try moving east by following the ".e" link.
+     Again, don't allow anything to print.
+     -> If that also doesn't work then print a message about not being able
+        to move east.
+2. Regardless of the outcome in step 1, display the room by using the "show"
+   command.
+                             *****************
+                             * ALIASES #6-12 *
+                             *****************
+These aliases are identical to alias #5, but for the other directions (but NOT
+including "s" and "n").
+
+                               *************
+                               * ALIAS #13 *
+                               *************
+This alias moves north. But there is one complication. Moving north can kill
+you if you are on the south side of the lake and try to swim north across the
+lake without the lifepreserver. So we have to check for this first.
+
+The logic should be if (OnTheSouthSideOfLake andnot OwnLifepreserver)then die.
+But we can't do that with command coordination. And we can't do it with
+parentheses either, because they don't work with exit.
+
+So the logic we will use is:
+  if (OnTheSouthSideOfLake) then make a hidden file
+     and if (OwnLifepreserver)then
+         remove the file
+     
+  if (the file exists) then display lakedeath and exit
+
+  otherwise, move north in exactly the same way as was done for ALIASES 6-13.
+
+Now to explain these steps:
+1. "if (OnTheSouthSideOfLake) then make a hidden file"
+   This is just one "cp" command. It makes use of the fact that the .lakesouth
+   file only exists in your directory if you are in this place.
+   Note: we don't want to see output.
+2. "and if (OwnLifepreserver)then"
+   If step 1 succeeded, then look for the lifepreserver among your items -- but
+   don't display anything.
+3. "remove the file"
+   If step 2 succeeded, then remove the file.
+4. if (the file exists) then display lakedeath and exit
+   This step is not conditional on the previous steps.  
+   It involves three commands that are connected by either && or || operators
+   (you have to figure out which).
+   It is actually quite similar to the part of alias#1 that implemented:
+      "if (alreadyWarned) then display gruedeath and exit"
+5. otherwise, move north in exactly the same way as was done for ALIASES 6-13.
+   This step is not conditional on the previous steps (because you would
+   already be out of this alias if you had died).
+   It is, of course, just like aliases 6-13.
+
+                               *************
+                               * ALIAS #14 *
+                               *************
+This alias moves south. It has two complications. One of them is analogous to
+the complication in alias #13: you can drown if you try the swim south across
+the lake.
+The second complication is new: You can win if you get to the cave entrance.
+
+To deal with these complications, make alias #14 exactly like alias#13, except:
+1. Use ".lakenorth" instead of ".lakesouth"
+2. At the end of the alias, add these commands for winning:
+   if (the congratulation sign is present) then
+     print a blank line
+     print "you win"
+     exit
+   It is similar to step 4 of alias #13.
+
+
+                               *************
+                               * ALIAS #15 *
+                               *************
+Call this alias "dropall".
+The logic is:
+  Move all items to the current directory and say "Done." and display gruewarn
+  but-if-that-failed then display a message about not having anything to drop
+
+  ...and remember to throw away the error messages from the mv command.
+
+
+                               *************
+                               * ALIAS #16 *
+                               *************
+Call this alias "dropfloppy".
+The logic is just like alias #15, except:
+1. You just move the floppy_disk, not all items.
+2. You don't warn about the grue.
+2. You make the error message specific to not having the floppy to drop.
+
+
+
+                               *************
+                               * ALIAS #17 *
+                               *************
+Call this alias "dropweight".
+The logic is just like alias #15, except:
+1. Replace the words "floppy" and "floppy_disk" with "weight"
+2. Dropping the weight on the button has consequences, as part 4 has described.
+   These consequences are achieved by adding commands at the end of the alias:
+     if (weightIsInTheRoom) then if (buttonIsInTheRoom) then if (upIsValid)then
+       move in the Maze1links  and  rename .Maze2 to Maze2  and  remove u  and
+       display "A passage opens up."  Note: this uses a lot of "&&" operators.
+       -> The checks for weightIsInTheRoom, buttonIsInTheRoom and upIsValid all
+          use "ls" in a way that should be familiar to you by this point.
+	  Remember, of course, to throw away the outputs of these "ls"
+	  commands.
+	  -> As for "upIsValid", it validates that the button was not already
+	     pressed (which could happen if you had picked the weight back up.)
+	     Note: It would be legal to do so, I just haven't implemented the
+	           code to make the maze passages close up again.
+
+
+                               *************
+                               * ALIAS #18 *
+                               *************
+Call this alias "get".
+First, it moves all items (and only items) in the room (except for the dial,
+the button, and the congratulations sign) to your items directory.
+This involves carefully constructing the wildcard patterns and also throwing
+away the error message.
+
+Second, it deals with the problem of the weight (which is so heavy that it
+only allows you to also hold the lamp, as described in part 2).
+
+Third it gets rid of the grue warning if you pick up the lamp. 
+
+The logic for the second and third parts is broken into 5 steps (which are
+separated from each other by ";" operators. These 5 steps are:
+1. if (holdingTheWeight) then nothing
+   otherwise print "Done."
+   
+2. if (holdingTheWeight) then 
+     if (holdingAnythingBesidesTheWeightOrLamp) then nothing
+     otherwise print "Done."
+
+3. if (holdingTheWeight) then 
+     if (holdingAnythingBesidesTheWeightOrLamp) then
+       print "You pick up as much as you can carry." then
+         move everything but the lamp and weight to the current directory-- but
+         without showing errors.
+
+4. if (holdingTheLamp) then 
+      remove the file that alias #1 had created when it marked as alreadyWarned
+
+5. execute the "show" alias.
+   
+
+                               *************
+                               * ALIAS #19 *
+                               *************
+Call this alias counterclockwise.
+It is implemented in 5 steps, separated by ";" operators. The logic is:
+1. If (.sauna0) then
+     Display "The dial will turn no further in that direction." then
+       Display a blank line
+
+2. Try moving .sauna1 to .sauna0. If successful then
+     Display ~/HW1/msgs/sauna0
+
+3. Try moving .sauna2 to .sauna1. If successful then
+     Display ~/HW1/msgs/sauna1
+
+4. Try moving .sauna3 to .sauna2. If successful then
+     Display ~/HW1/msgs/sauna2
+
+5. Look for any of the sauna files (.sauna0, .sauna1, ...) If failure then
+     Display ~/HW1/msgs/nosauna
+     
+
+                               *************
+                               * ALIAS #20 *
+                               *************
+Call this alias clockwise.
+It is similar to counterclockwise, except that turning up the heat can kill
+you or melt things.
+
+This is alias is implemented in 6 steps which are separated be ";" operators:
+1. If (.sauna3) then display saunadeath then exit
+     This is very similar to How you check for death in alias #1.
+2. If (.sauna2) then display HW1/msgs/sauna3 and
+     then try to remove the floppy from your items directory (note, -f cannot
+          be used here because it causes rm to return success even if it
+	  actually fails).
+          then, if that succeeds, display HW1/msg/floppy
+3. Try to move .sauna2 to .sauna3. If successful then try to turn
+   HW1/items/wax_statuette into HW1/items/diamond. If successful, then display
+   HW1/msgs/wax.
+4. Try moving .sauna1 to .sauna2. If successful then
+     Display ~/HW1/msgs/sauna2
+5. Try moving .sauna0 to .sauna1. If successful then
+     Display ~/HW1/msgs/sauna1
+6. Look for any of the sauna files (.sauna0, .sauna1, ...) If failure then
+     Display ~/HW1/msgs/nosauna
+
+
+                               *************
+                               * ALIAS #21 *
+                               *************
+It is just this:
+                 alias quit='exit'
+
+
+                               *************
+                               * ALIAS #21 *
+                               *************
+Call this alias dunnet. Its job is to initialize things.
+It is 7 simple commands, each separated by a ";" operator:
+1. PS1="> " 
+2. clear
+3. cd ~
+4. Remove the HW1 directory, if present
+5. Expand dunnet.tar, but don't display anything
+6. cd HW1/Receiving_room
+7. show

@@ -1,0 +1,21 @@
+#!/usr/bin/tcsh
+if( $1 == X ) set label = O
+if( $1 == O ) set label = X
+@ n = `cat aftermove | tr -cd "[a-i]" | wc -m` 
+if ( $n < 9 ) echo "\n\nThe computer moves:"
+cat aftermove 
+echo -n "\nWhat is your move? (a-i) "
+while ( 1 )
+	set input = $<:q
+	if( $input:q =~ [a-i] ) then
+		grep "$input:q" aftermove >& /dev/null && break
+		echo -n "Sorry. You must enter an available choice (a-i): "
+	else
+		echo -n "Sorry. You must enter a valid choice (a-i): "
+	endif
+end
+if ( $n == 1 ) echo "\n\nIts a tie:"
+if ( $n > 1 ) echo "\n\nYour move:"
+cat aftermove | sed "s/$input/$1/g"
+cat aftermove | sed "s/$input/$1/g" | tr -cd "[a-iOX\n]" | grep "..." > beforemove
+if( $n > 1 ) ./trymoves $label:q 1 1
